@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:daemon": "next dev > logs.txt 2>&1 & echo 'Server started, writing logs to logs.txt'",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate",
+    "setup": "pnpm install && npx prisma generate && npx prisma migrate dev",
+    "db:reset": "npx prisma migrate reset --force",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"
