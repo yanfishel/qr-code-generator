@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ErrorCorrectionLevel {
+  L
+  M
+  Q
+  H
+}
+
+model User {
+  id        String   @id @default(cuid())
+  // TODO(clerk): populate with Clerk's userId from auth() once real auth
+  // lands. Today this holds the placeholder for the single seeded default
+  // user — see prisma/seed.ts and src/lib/current-user.ts.
+  clerkId   String   @unique @db.VarChar(191)
+  email     String   @unique @db.VarChar(191)
+  name      String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  qrCodes   QrCode[]
+}
+
+model QrCode {
+  id          String               @id @default(cuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String?              @db.VarChar(255)
+  data        String               @db.Text
+  fgColor     String               @default("#000000") @db.VarChar(9)
+  bgColor     String               @default("#FFFFFF") @db.VarChar(9)
+  size        Int                  @default(256)
+  level       ErrorCorrectionLevel @default(M)
+  logoDataUrl String?              @db.LongText
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([userId])
+}
