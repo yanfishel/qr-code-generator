@@ -21,6 +21,10 @@ Next.js (App Router) + TypeScript, pnpm, Tailwind CSS + shadcn/ui, Prisma 6 (MyS
 
 Auth is deferred: the app runs in single-user mode against one seeded default user (`prisma/seed.ts`, `src/lib/current-user.ts`). `User.clerkId` is ready for a future Clerk integration — see the `TODO(clerk)` markers in `src/lib/current-user.ts` and `prisma/schema.prisma` for the swap-in point.
 
+## Skills
+
+Project-scoped Claude Code skills live in `.claude/skills/` and are tracked in `skills-lock.json`. Currently installed: `frontend-design` (from `anthropics/skills`) — use it for UI/visual design guidance when building or reshaping frontend components.
+
 ## Conventions
 
 - shadcn/ui components live in `src/components/ui/` (Radix UI base, "nova" preset); app-specific components live in `src/components/qr/`.
