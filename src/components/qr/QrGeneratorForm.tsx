@@ -321,7 +321,7 @@ export function QrGeneratorForm() {
 
       <div className="flex flex-col items-center gap-4">
         <ViewfinderFrame active={hasContent}>
-          <Card className="sticky top-8 bg-dot-grid">
+          <Card className="sticky top-8 bg-soft-gradient">
             <CardContent className="flex items-center justify-center p-8">
               {hasContent ? (
                 <>

@@ -39,7 +39,7 @@ export default function RootLayout({
       lang="en"
       className={cn("font-sans", display.variable, body.variable, plexMono.variable)}
     >
-      <body className="bg-dot-grid">
+      <body className="bg-soft-gradient">
         <ClerkProvider appearance={{ theme: shadcn }}>
           <header className="border-b border-border/70 bg-background/80 backdrop-blur-sm">
             <nav className="mx-auto flex max-w-4xl items-center gap-7 px-4 py-4">
