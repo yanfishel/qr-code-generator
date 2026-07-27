@@ -1,13 +1,22 @@
-// TODO(clerk): Replace with a real session lookup once Clerk is wired up —
-// import auth() from "@clerk/nextjs/server", read auth().userId, and use
-// that instead of DEFAULT_USER_CLERK_ID (upserting a User row on first
-// sign-in). Until then the whole app runs in single-user mode.
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
-export const DEFAULT_USER_CLERK_ID = "seed-default-user";
-
 export async function getCurrentUser() {
-  return prisma.user.findUniqueOrThrow({
-    where: { clerkId: DEFAULT_USER_CLERK_ID },
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const existing = await prisma.user.findUnique({ where: { clerkId: userId } });
+  if (existing) return existing;
+
+  const clerkUser = await currentUser();
+  const email = clerkUser?.primaryEmailAddress?.emailAddress ?? clerkUser?.emailAddresses[0]?.emailAddress;
+  if (!email) throw new Error("Signed-in Clerk user has no email address");
+
+  return prisma.user.create({
+    data: {
+      clerkId: userId,
+      email,
+      name: clerkUser?.fullName ?? undefined,
+    },
   });
 }

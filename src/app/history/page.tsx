@@ -1,9 +1,11 @@
+import { auth } from "@clerk/nextjs/server";
 import { listQrCodes } from "@/actions/qr-actions";
 import { SavedQrList } from "@/components/qr/SavedQrList";
 
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
+  await auth.protect();
   const qrCodes = await listQrCodes();
 
   return (

@@ -1,6 +1,24 @@
 {
   "version": 1,
   "skills": {
+    "clerk": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/core/clerk/SKILL.md",
+      "computedHash": "dcf5e2a542e4ba1b22908f6968dfa31275149471f02956aff4485cc2d49c1fc0"
+    },
+    "clerk-cli": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/core/clerk-cli/SKILL.md",
+      "computedHash": "1a5c3a9535b1c36633bce775a1c940b99aa80c0143ec4059e32fc6830d8b5713"
+    },
+    "clerk-setup": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/core/clerk-setup/SKILL.md",
+      "computedHash": "2142fbbf99008c3152e7044730e57d6063b26a9f2523da1fd21a83f6207a2b81"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

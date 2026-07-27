@@ -16,9 +16,6 @@ enum ErrorCorrectionLevel {
 
 model User {
   id        String   @id @default(cuid())
-  // TODO(clerk): populate with Clerk's userId from auth() once real auth
-  // lands. Today this holds the placeholder for the single seeded default
-  // user — see prisma/seed.ts and src/lib/current-user.ts.
   clerkId   String   @unique @db.VarChar(191)
   email     String   @unique @db.VarChar(191)
   name      String?  @db.VarChar(255)
