@@ -15,6 +15,19 @@ enum ErrorCorrectionLevel {
   H
 }
 
+enum QrDotStyle {
+  SQUARE
+  ROUNDED
+  DOTS
+  CLASSY
+}
+
+enum QrFinderStyle {
+  SQUARE
+  ROUNDED
+  CIRCLE
+}
+
 enum QrType {
   URL
   TEXT
@@ -41,21 +54,24 @@ model User {
 }
 
 model QrCode {
-  id          String               @id @default(cuid())
-  userId      String
-  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name        String?              @db.VarChar(255)
-  type        QrType               @default(TEXT)
-  data        String               @db.Text
-  fgColor     String               @default("#000000") @db.VarChar(9)
-  bgColor     String               @default("#FFFFFF") @db.VarChar(9)
-  size        Int                  @default(256)
-  level       ErrorCorrectionLevel @default(M)
-  margin      Int                  @default(2)
-  logoDataUrl String?              @db.LongText
-  logoSize    Int                  @default(20)
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  id                String               @id @default(cuid())
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String?              @db.VarChar(255)
+  type              QrType               @default(TEXT)
+  data              String               @db.Text
+  fgColor           String               @default("#000000") @db.VarChar(9)
+  bgColor           String               @default("#FFFFFF") @db.VarChar(9)
+  size              Int                  @default(256)
+  level             ErrorCorrectionLevel @default(M)
+  dotStyle          QrDotStyle           @default(SQUARE)
+  finderFrameStyle  QrFinderStyle        @default(SQUARE)
+  finderMarkerStyle QrFinderStyle        @default(SQUARE)
+  margin            Int                  @default(2)
+  logoDataUrl       String?              @db.LongText
+  logoSize          Int                  @default(20)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   @@index([userId])
 }

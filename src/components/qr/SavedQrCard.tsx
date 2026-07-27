@@ -1,13 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import { QRCodeCanvas } from "qrcode.react";
 import { Trash2, Download } from "lucide-react";
 import type { QrCode } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { QrCanvas } from "@/components/qr/QrCanvas";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
   return (
     <Card className="transition-colors hover:border-primary/50">
       <CardContent className="flex justify-center p-4">
-        <QRCodeCanvas
+        <QrCanvas
           ref={canvasRef}
           value={qrCode.data}
           size={200}
@@ -42,6 +42,9 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
           bgColor={qrCode.bgColor}
           level={qrCode.level}
           marginSize={qrCode.margin}
+          dotStyle={qrCode.dotStyle}
+          finderFrameStyle={qrCode.finderFrameStyle}
+          finderMarkerStyle={qrCode.finderMarkerStyle}
           imageSettings={
             qrCode.logoDataUrl
               ? {

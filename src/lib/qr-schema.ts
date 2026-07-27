@@ -3,6 +3,23 @@ import { z } from "zod";
 export const errorCorrectionLevels = ["L", "M", "Q", "H"] as const;
 const hexColor = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
+export const dotStyles = ["SQUARE", "ROUNDED", "DOTS", "CLASSY"] as const;
+export type DotStyle = (typeof dotStyles)[number];
+export const dotStyleLabels: Record<DotStyle, string> = {
+  SQUARE: "Square",
+  ROUNDED: "Rounded",
+  DOTS: "Dots",
+  CLASSY: "Classy",
+};
+
+export const finderStyles = ["SQUARE", "ROUNDED", "CIRCLE"] as const;
+export type FinderStyle = (typeof finderStyles)[number];
+export const finderStyleLabels: Record<FinderStyle, string> = {
+  SQUARE: "Square",
+  ROUNDED: "Rounded",
+  CIRCLE: "Circle",
+};
+
 export const qrTypes = [
   "URL",
   "TEXT",
@@ -198,6 +215,9 @@ export const qrFormSchema = z.object({
   bgColor: z.string().regex(hexColor),
   size: z.number().int().min(128).max(1024),
   level: z.enum(errorCorrectionLevels),
+  dotStyle: z.enum(dotStyles),
+  finderFrameStyle: z.enum(finderStyles),
+  finderMarkerStyle: z.enum(finderStyles),
   margin: z.number().int().min(0).max(10),
   logoDataUrl: z
     .string()

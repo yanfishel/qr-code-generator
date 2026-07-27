@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PresetLogoPicker } from "@/components/qr/PresetLogoPicker";
 
 const MAX_LOGO_DIMENSION = 256;
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -71,7 +72,8 @@ export function LogoUploader({ value, onChange }: LogoUploaderProps) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      <PresetLogoPicker value={value} onChange={onChange} />
       <div className="flex items-center gap-3">
         <Input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} />
         {value ? (

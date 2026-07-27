@@ -8,14 +8,15 @@ vi.mock("@/hooks/use-qr-download", () => ({
   useQrDownload: () => downloadMock,
 }));
 
-vi.mock("qrcode.react", () => ({
-  QRCodeCanvas: ({
+vi.mock("@/components/qr/QrCanvas", () => ({
+  QrCanvas: ({
     ref,
     value,
     size,
     fgColor,
     bgColor,
     level,
+    dotStyle,
     imageSettings,
   }: {
     ref?: React.Ref<HTMLCanvasElement>;
@@ -24,6 +25,7 @@ vi.mock("qrcode.react", () => ({
     fgColor: string;
     bgColor: string;
     level: string;
+    dotStyle: string;
     imageSettings?: { src: string };
   }) => (
     <canvas
@@ -34,6 +36,7 @@ vi.mock("qrcode.react", () => ({
       data-fg-color={fgColor}
       data-bg-color={bgColor}
       data-level={level}
+      data-dot-style={dotStyle}
       data-logo={imageSettings?.src ?? ""}
     />
   ),
@@ -52,6 +55,9 @@ function makeQrCode(overrides: Partial<QrCode> = {}): QrCode {
     bgColor: "#eeeeee",
     size: 256,
     level: "M",
+    dotStyle: "SQUARE",
+    finderFrameStyle: "SQUARE",
+    finderMarkerStyle: "SQUARE",
     margin: 2,
     logoDataUrl: null,
     logoSize: 20,
