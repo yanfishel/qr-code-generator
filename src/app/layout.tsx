@@ -39,7 +39,7 @@ export default function RootLayout({
       lang="en"
       className={cn("font-sans", display.variable, body.variable, plexMono.variable)}
     >
-      <body className="bg-dot-grid">
+      <body className="bg-page-gradient">
         <ClerkProvider appearance={{ theme: shadcn }}>
           <header className="border-b border-border/70 bg-background/80 backdrop-blur-sm">
             <nav className="mx-auto flex max-w-4xl items-center gap-7 px-4 py-4">
@@ -72,7 +72,7 @@ export default function RootLayout({
               </div>
             </nav>
           </header>
-          <main className="mx-auto max-w-4xl px-4 py-10">{children}</main>
+          <main className="mx-auto max-w-4xl px-4 pt-5 pb-10">{children}</main>
           <Toaster />
         </ClerkProvider>
       </body>

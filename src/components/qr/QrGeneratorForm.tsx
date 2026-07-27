@@ -53,6 +53,8 @@ const styleDefaultValues: StyleFormValues = {
 
 type Tab = "content" | "style";
 
+const fieldLabelClassName = "font-mono text-xs font-normal tracking-wide text-muted-foreground uppercase";
+
 export function QrGeneratorForm() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -123,28 +125,7 @@ export function QrGeneratorForm() {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name (optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="My QR code" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="space-y-3">
-            <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-              QR code type
-            </p>
-            <QrTypeSelector value={qrType} onChange={setQrType} />
-          </div>
-
+        <form onSubmit={form.handleSubmit(onSubmit)} className="min-w-0 space-y-6">
           <div className="flex border-b border-border">
             {(
               [
@@ -174,20 +155,8 @@ export function QrGeneratorForm() {
 
           {activeTab === "content" ? (
             <div className="space-y-4">
+              <QrTypeSelector value={qrType} onChange={setQrType} />
               <QrContentFields type={qrType} fields={fields} onFieldChange={handleFieldChange} />
-              {hasContent ? (
-                <div className="space-y-1.5 rounded-md border border-border bg-muted p-3">
-                  <p className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-                    Encoded value
-                  </p>
-                  <p className="font-mono text-xs break-all text-primary">
-                    {qrValue.length > 160 ? qrValue.slice(0, 160) + "…" : qrValue}
-                  </p>
-                  <p className="font-mono text-[0.6rem] text-muted-foreground">
-                    {qrValue.length} chars
-                  </p>
-                </div>
-              ) : null}
             </div>
           ) : (
             <div className="space-y-5">
@@ -197,7 +166,7 @@ export function QrGeneratorForm() {
                   name="fgColor"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Foreground</FormLabel>
+                      <FormLabel className={fieldLabelClassName}>Foreground</FormLabel>
                       <FormControl>
                         <ColorPickerField value={field.value} onChange={field.onChange} />
                       </FormControl>
@@ -210,7 +179,7 @@ export function QrGeneratorForm() {
                   name="bgColor"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Background</FormLabel>
+                      <FormLabel className={fieldLabelClassName}>Background</FormLabel>
                       <FormControl>
                         <ColorPickerField value={field.value} onChange={field.onChange} />
                       </FormControl>
@@ -225,7 +194,7 @@ export function QrGeneratorForm() {
                 name="level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Error correction</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Error correction</FormLabel>
                     <FormControl>
                       <ErrorCorrectionSelector value={field.value} onChange={field.onChange} />
                     </FormControl>
@@ -239,7 +208,7 @@ export function QrGeneratorForm() {
                 name="size"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Size — {field.value}px</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Size — {field.value}px</FormLabel>
                     <FormControl>
                       <Slider
                         min={128}
@@ -259,7 +228,7 @@ export function QrGeneratorForm() {
                 name="margin"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Margin — {field.value} cells</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Margin — {field.value} cells</FormLabel>
                     <FormControl>
                       <Slider
                         min={0}
@@ -279,7 +248,7 @@ export function QrGeneratorForm() {
                 name="logoDataUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Logo (optional)</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Logo (optional)</FormLabel>
                     <FormControl>
                       <LogoUploader value={field.value} onChange={field.onChange} />
                     </FormControl>
@@ -294,7 +263,7 @@ export function QrGeneratorForm() {
                   name="logoSize"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Logo size — {field.value}%</FormLabel>
+                      <FormLabel className={fieldLabelClassName}>Logo size — {field.value}%</FormLabel>
                       <FormControl>
                         <Slider
                           min={10}
@@ -312,34 +281,40 @@ export function QrGeneratorForm() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
-              <Download /> PNG
-            </Button>
-            <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
-              <Download /> SVG
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={handleCopy}
-              disabled={!hasContent}
-              aria-label="Copy QR code"
-            >
-              {copied ? <CheckCheck /> : <Copy />}
-            </Button>
-            <Button type="submit" disabled={!hasContent || isSaving} className="ml-auto">
-              <Save /> {isSaving ? "Saving…" : "Save"}
-            </Button>
+          <div className="space-y-3 border-t border-border pt-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="My QR code" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-center">
+              <Button
+                type="submit"
+                variant={hasContent && !isSaving ? "default" : "outline"}
+                size="lg"
+                className="px-8 text-sm"
+                disabled={!hasContent || isSaving}
+              >
+                <Save className="size-4" /> {isSaving ? "Saving…" : "Save"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
 
-      <div className="flex flex-col items-center gap-4">
-        <ViewfinderFrame active={hasContent}>
-          <Card className="sticky top-8 bg-dot-grid">
-            <CardContent className="flex items-center justify-center p-8">
+      <div className="flex min-w-0 flex-col items-center gap-4 px-6 pt-5">
+        <ViewfinderFrame active={hasContent} className="w-full">
+          <Card className="sticky top-8 aspect-square w-full gap-0 bg-soft-gradient py-0 shadow-lg shadow-primary/10 ring-1 ring-primary/15">
+            <CardContent className="flex h-full items-center justify-center p-5">
               {hasContent ? (
                 <>
                   <QRCodeCanvas
@@ -351,6 +326,7 @@ export function QrGeneratorForm() {
                     level={style.level}
                     marginSize={style.margin}
                     imageSettings={imageSettings}
+                    style={{ width: `min(100%, ${style.size}px)`, height: "auto" }}
                   />
                   <QRCodeSVG
                     ref={svgRef}
@@ -372,31 +348,53 @@ export function QrGeneratorForm() {
             </CardContent>
           </Card>
         </ViewfinderFrame>
-        <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-          {hasContent ? (
-            <span className="text-primary">● ready to scan</span>
-          ) : (
-            "· awaiting content"
-          )}
-        </p>
+
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
+            <Download /> PNG
+          </Button>
+          <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
+            <Download /> SVG
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleCopy}
+            disabled={!hasContent}
+            aria-label="Copy QR code"
+          >
+            {copied ? <CheckCheck /> : <Copy />}
+          </Button>
+        </div>
+
+        <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
+          {[
+            { label: "Type", value: qrTypeLabels[qrType] },
+            { label: "Margin", value: `${style.margin} cells` },
+            { label: "Correction", value: style.level },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center gap-0.5 border-r border-border py-3 last:border-r-0"
+            >
+              <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+                {label}
+              </span>
+              <span className="font-mono text-sm font-medium text-primary">{value}</span>
+            </div>
+          ))}
+        </div>
 
         {hasContent ? (
-          <div className="grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-md border border-border">
-            {[
-              { label: "Type", value: qrTypeLabels[qrType] },
-              { label: "Margin", value: `${style.margin} cells` },
-              { label: "Correction", value: style.level },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center gap-0.5 border-r border-border py-3 last:border-r-0"
-              >
-                <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-                  {label}
-                </span>
-                <span className="font-mono text-sm font-medium text-primary">{value}</span>
-              </div>
-            ))}
+          <div className="w-full space-y-1.5 rounded-md border border-border bg-muted p-3">
+            <p className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+              Encoded value
+            </p>
+            <p className="font-mono text-xs break-all text-primary">
+              {qrValue.length > 160 ? qrValue.slice(0, 160) + "…" : qrValue}
+            </p>
+            <p className="font-mono text-[0.6rem] text-muted-foreground">{qrValue.length} chars</p>
           </div>
         ) : null}
       </div>

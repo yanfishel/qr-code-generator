@@ -1,6 +1,19 @@
 "use client";
 
-import { Link, FileText, Mail, Wifi, User, MessageSquare, Phone, MapPin, Bitcoin } from "lucide-react";
+import {
+  Link,
+  FileText,
+  Mail,
+  Wifi,
+  User,
+  MessageSquare,
+  Phone,
+  MapPin,
+  Bitcoin,
+  MessageCircle,
+  CalendarDays,
+  Wallet,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { qrTypeLabels, type QrType } from "@/lib/qr-schema";
@@ -15,6 +28,9 @@ const TYPES: { id: QrType; icon: React.ElementType }[] = [
   { id: "PHONE", icon: Phone },
   { id: "LOCATION", icon: MapPin },
   { id: "BITCOIN", icon: Bitcoin },
+  { id: "WHATSAPP", icon: MessageCircle },
+  { id: "EVENT", icon: CalendarDays },
+  { id: "PAYPAL", icon: Wallet },
 ];
 
 type QrTypeSelectorProps = {
@@ -24,7 +40,7 @@ type QrTypeSelectorProps = {
 
 export function QrTypeSelector({ value, onChange }: QrTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-3 gap-1.5">
+    <div className="grid grid-cols-4 gap-1.5">
       {TYPES.map(({ id, icon: Icon }) => {
         const active = value === id;
         return (
@@ -34,7 +50,7 @@ export function QrTypeSelector({ value, onChange }: QrTypeSelectorProps) {
             onClick={() => onChange(id)}
             aria-pressed={active}
             className={cn(
-              "flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 transition-colors",
+              "flex flex-col items-center gap-1.5 rounded-md border px-2 py-1.5 transition-colors",
               active
                 ? "border-primary bg-accent text-accent-foreground"
                 : "border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",

@@ -33,7 +33,7 @@ Project-scoped Claude Code skills live in `.claude/skills/` (symlinked into `.ag
 
 ## QR content model
 
-`src/lib/qr-schema.ts` defines `qrTypes` (`URL`, `TEXT`, `EMAIL`, `WIFI`, `VCARD`, `SMS`, `PHONE`, `LOCATION`, `BITCOIN`), a `QrFieldValues` shape covering every type's raw inputs, and `buildQrValue(type, fields)`, which encodes those raw inputs into the final string (e.g. `WIFI:T:...;;`, `mailto:...`, a vCard block) that gets persisted as `QrCode.data`.
+`src/lib/qr-schema.ts` defines `qrTypes` (`URL`, `TEXT`, `EMAIL`, `WIFI`, `VCARD`, `SMS`, `PHONE`, `LOCATION`, `BITCOIN`, `WHATSAPP`, `EVENT`, `PAYPAL` — 12 types, shown 4-per-row in `QrTypeSelector`), a `QrFieldValues` shape covering every type's raw inputs, and `buildQrValue(type, fields)`, which encodes those raw inputs into the final string (e.g. `WIFI:T:...;;`, `mailto:...`, a vCard block, a `BEGIN:VCALENDAR` block for `EVENT`) that gets persisted as `QrCode.data`. `qrTypes` is mirrored by a Prisma `QrType` enum in `prisma/schema.prisma` — adding a type needs a migration there too.
 
 In `QrGeneratorForm`, the per-type `fields` and selected `qrType` live in local `useState` — they are never sent to the server directly. Only the derived string from `buildQrValue` (plus the style fields below) is validated against `qrFormSchema` and persisted. Style inputs (name, colors, size, level, margin, logo, logoSize) are the only fields wired through react-hook-form (`styleFormSchema`, `qrFormSchema.omit({ type: true, data: true })`). Don't try to fold the content fields into the RHF schema — they're intentionally decoupled since their shape changes per type and nothing about them is persisted verbatim.
 

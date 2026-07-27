@@ -25,6 +25,9 @@ enum QrType {
   PHONE
   LOCATION
   BITCOIN
+  WHATSAPP
+  EVENT
+  PAYPAL
 }
 
 model User {
