@@ -312,8 +312,8 @@ export function QrGeneratorForm() {
       </Form>
 
       <div className="flex flex-col items-center gap-4 pt-5">
-        <ViewfinderFrame active={hasContent}>
-          <Card className="sticky top-8 aspect-square w-80 bg-soft-gradient shadow-lg shadow-primary/10 ring-1 ring-primary/15">
+        <ViewfinderFrame active={hasContent} className="w-full">
+          <Card className="sticky top-8 aspect-square w-full bg-soft-gradient shadow-lg shadow-primary/10 ring-1 ring-primary/15">
             <CardContent className="flex h-full items-center justify-center p-5">
               {hasContent ? (
                 <>
@@ -368,7 +368,7 @@ export function QrGeneratorForm() {
           </Button>
         </div>
 
-        <div className="grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-md border border-border">
+        <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
           {[
             { label: "Type", value: qrTypeLabels[qrType] },
             { label: "Margin", value: `${style.margin} cells` },
@@ -387,7 +387,7 @@ export function QrGeneratorForm() {
         </div>
 
         {hasContent ? (
-          <div className="w-full max-w-xs space-y-1.5 rounded-md border border-border bg-muted p-3">
+          <div className="w-full space-y-1.5 rounded-md border border-border bg-muted p-3">
             <p className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
               Encoded value
             </p>

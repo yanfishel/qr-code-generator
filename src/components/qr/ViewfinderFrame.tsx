@@ -4,15 +4,16 @@ import { cn } from "@/lib/utils";
 
 type ViewfinderFrameProps = {
   active: boolean;
+  className?: string;
   children: React.ReactNode;
 };
 
 const cornerClasses =
   "absolute size-6 border-primary transition-[border-color] duration-200 motion-reduce:transition-none";
 
-export function ViewfinderFrame({ active, children }: ViewfinderFrameProps) {
+export function ViewfinderFrame({ active, className, children }: ViewfinderFrameProps) {
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       <div
         aria-hidden="true"
         className={cn(
