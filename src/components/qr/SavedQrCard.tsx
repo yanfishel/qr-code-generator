@@ -6,6 +6,7 @@ import { Trash2, Download } from "lucide-react";
 import type { QrCode } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -19,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useQrDownload } from "@/hooks/use-qr-download";
+import { qrTypeLabels } from "@/lib/qr-schema";
 
 type SavedQrCardProps = {
   qrCode: QrCode;
@@ -39,12 +41,13 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
           fgColor={qrCode.fgColor}
           bgColor={qrCode.bgColor}
           level={qrCode.level}
+          marginSize={qrCode.margin}
           imageSettings={
             qrCode.logoDataUrl
               ? {
                   src: qrCode.logoDataUrl,
-                  height: 200 * 0.2,
-                  width: 200 * 0.2,
+                  height: 200 * (qrCode.logoSize / 100),
+                  width: 200 * (qrCode.logoSize / 100),
                   excavate: true,
                 }
               : undefined
@@ -52,7 +55,12 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
         />
       </CardContent>
       <CardFooter className="flex flex-col items-stretch gap-2">
-        <p className="truncate text-sm font-medium">{qrCode.name || qrCode.data}</p>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="font-mono text-[0.6rem] tracking-wide uppercase">
+            {qrTypeLabels[qrCode.type]}
+          </Badge>
+          <p className="truncate text-sm font-medium">{qrCode.name || qrCode.data}</p>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
