@@ -13,6 +13,9 @@ export const qrTypes = [
   "PHONE",
   "LOCATION",
   "BITCOIN",
+  "WHATSAPP",
+  "EVENT",
+  "PAYPAL",
 ] as const;
 export type QrType = (typeof qrTypes)[number];
 
@@ -26,6 +29,9 @@ export const qrTypeLabels: Record<QrType, string> = {
   PHONE: "Phone",
   LOCATION: "Location",
   BITCOIN: "Bitcoin",
+  WHATSAPP: "WhatsApp",
+  EVENT: "Event",
+  PAYPAL: "PayPal",
 };
 
 export type QrFieldValues = {
@@ -53,6 +59,14 @@ export type QrFieldValues = {
   bitcoinAddress: string;
   bitcoinAmount: string;
   bitcoinLabel: string;
+  whatsappPhone: string;
+  whatsappMessage: string;
+  eventTitle: string;
+  eventStart: string;
+  eventEnd: string;
+  eventLocation: string;
+  paypalUsername: string;
+  paypalAmount: string;
 };
 
 export const defaultQrFieldValues: QrFieldValues = {
@@ -80,6 +94,14 @@ export const defaultQrFieldValues: QrFieldValues = {
   bitcoinAddress: "",
   bitcoinAmount: "",
   bitcoinLabel: "",
+  whatsappPhone: "",
+  whatsappMessage: "",
+  eventTitle: "",
+  eventStart: "",
+  eventEnd: "",
+  eventLocation: "",
+  paypalUsername: "",
+  paypalAmount: "",
 };
 
 export function buildQrValue(type: QrType, fields: QrFieldValues): string {
@@ -131,6 +153,37 @@ export function buildQrValue(type: QrType, fields: QrFieldValues): string {
       if (fields.bitcoinAmount) params.push(`amount=${fields.bitcoinAmount}`);
       if (fields.bitcoinLabel) params.push(`label=${encodeURIComponent(fields.bitcoinLabel)}`);
       return `bitcoin:${fields.bitcoinAddress}${params.length ? "?" + params.join("&") : ""}`;
+    }
+    case "WHATSAPP": {
+      const digits = fields.whatsappPhone.replace(/\D/g, "");
+      if (!digits) return "";
+      const query = fields.whatsappMessage
+        ? `?text=${encodeURIComponent(fields.whatsappMessage)}`
+        : "";
+      return `https://wa.me/${digits}${query}`;
+    }
+    case "EVENT": {
+      if (!fields.eventTitle.trim() || !fields.eventStart.trim()) return "";
+      const toIcsDate = (value: string) => value.replace(/[-:]/g, "") + "00";
+      return [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        `SUMMARY:${fields.eventTitle}`,
+        `DTSTART:${toIcsDate(fields.eventStart)}`,
+        fields.eventEnd && `DTEND:${toIcsDate(fields.eventEnd)}`,
+        fields.eventLocation && `LOCATION:${fields.eventLocation}`,
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+    case "PAYPAL": {
+      if (!fields.paypalUsername.trim()) return "";
+      return `https://paypal.me/${fields.paypalUsername.trim()}${
+        fields.paypalAmount ? "/" + fields.paypalAmount : ""
+      }`;
     }
     default:
       return "";

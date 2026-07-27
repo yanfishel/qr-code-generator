@@ -310,6 +310,91 @@ export function QrContentFields({ type, fields, onFieldChange }: QrContentFields
         </div>
       );
 
+    case "WHATSAPP":
+      return (
+        <div className="space-y-3">
+          <Field label="Phone number" htmlFor="qr-whatsapp-phone">
+            <Input
+              id="qr-whatsapp-phone"
+              value={fields.whatsappPhone}
+              onChange={(e) => set("whatsappPhone")(e.target.value)}
+              placeholder="+1 555 000 0000"
+            />
+          </Field>
+          <Field label="Message (optional)" htmlFor="qr-whatsapp-message">
+            <Textarea
+              id="qr-whatsapp-message"
+              rows={3}
+              value={fields.whatsappMessage}
+              onChange={(e) => set("whatsappMessage")(e.target.value)}
+              placeholder="Your message..."
+            />
+          </Field>
+        </div>
+      );
+
+    case "EVENT":
+      return (
+        <div className="space-y-3">
+          <Field label="Title" htmlFor="qr-event-title">
+            <Input
+              id="qr-event-title"
+              value={fields.eventTitle}
+              onChange={(e) => set("eventTitle")(e.target.value)}
+              placeholder="Team meeting"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Starts" htmlFor="qr-event-start">
+              <Input
+                id="qr-event-start"
+                type="datetime-local"
+                value={fields.eventStart}
+                onChange={(e) => set("eventStart")(e.target.value)}
+              />
+            </Field>
+            <Field label="Ends (optional)" htmlFor="qr-event-end">
+              <Input
+                id="qr-event-end"
+                type="datetime-local"
+                value={fields.eventEnd}
+                onChange={(e) => set("eventEnd")(e.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label="Location (optional)" htmlFor="qr-event-location">
+            <Input
+              id="qr-event-location"
+              value={fields.eventLocation}
+              onChange={(e) => set("eventLocation")(e.target.value)}
+              placeholder="Conference room / address"
+            />
+          </Field>
+        </div>
+      );
+
+    case "PAYPAL":
+      return (
+        <div className="space-y-3">
+          <Field label="PayPal.me username" htmlFor="qr-paypal-username">
+            <Input
+              id="qr-paypal-username"
+              value={fields.paypalUsername}
+              onChange={(e) => set("paypalUsername")(e.target.value)}
+              placeholder="janedoe"
+            />
+          </Field>
+          <Field label="Amount (optional)" htmlFor="qr-paypal-amount">
+            <Input
+              id="qr-paypal-amount"
+              value={fields.paypalAmount}
+              onChange={(e) => set("paypalAmount")(e.target.value)}
+              placeholder="10.00"
+            />
+          </Field>
+        </div>
+      );
+
     default:
       return null;
   }
