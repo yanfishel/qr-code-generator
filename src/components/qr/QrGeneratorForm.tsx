@@ -285,7 +285,9 @@ export function QrGeneratorForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name (optional)</FormLabel>
+                  <FormLabel className="font-mono text-xs font-normal tracking-wide text-muted-foreground uppercase">
+                    Name (optional)
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="My QR code" {...field} />
                   </FormControl>
