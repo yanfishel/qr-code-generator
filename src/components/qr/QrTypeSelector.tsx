@@ -24,7 +24,7 @@ type QrTypeSelectorProps = {
 
 export function QrTypeSelector({ value, onChange }: QrTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-3 gap-1">
+    <div className="grid grid-cols-3 gap-1.5">
       {TYPES.map(({ id, icon: Icon }) => {
         const active = value === id;
         return (
@@ -34,14 +34,14 @@ export function QrTypeSelector({ value, onChange }: QrTypeSelectorProps) {
             onClick={() => onChange(id)}
             aria-pressed={active}
             className={cn(
-              "flex flex-col items-center gap-1 rounded-md border px-2 py-1.5 transition-colors",
+              "flex flex-col items-center gap-1.5 rounded-md border px-2 py-1.5 transition-colors",
               active
                 ? "border-primary bg-accent text-accent-foreground"
                 : "border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
             )}
           >
-            <Icon className="size-3.5" strokeWidth={1.5} />
-            <span className="font-mono text-[0.55rem] tracking-wide uppercase">
+            <Icon className="size-4" strokeWidth={1.5} />
+            <span className="font-mono text-[0.6rem] tracking-wide uppercase">
               {qrTypeLabels[id]}
             </span>
           </button>
