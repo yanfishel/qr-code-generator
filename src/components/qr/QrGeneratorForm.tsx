@@ -308,8 +308,8 @@ export function QrGeneratorForm() {
             />
 
             <div className="flex justify-center">
-              <Button type="submit" size="lg" className="px-8 text-base" disabled={!hasContent || isSaving}>
-                <Save className="size-5" /> {isSaving ? "Saving…" : "Save"}
+              <Button type="submit" size="lg" className="px-8 text-sm" disabled={!hasContent || isSaving}>
+                <Save className="size-4" /> {isSaving ? "Saving…" : "Save"}
               </Button>
             </div>
           </div>
