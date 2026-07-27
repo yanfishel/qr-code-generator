@@ -366,25 +366,23 @@ export function QrGeneratorForm() {
           </Button>
         </div>
 
-        {hasContent ? (
-          <div className="grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-md border border-border">
-            {[
-              { label: "Type", value: qrTypeLabels[qrType] },
-              { label: "Margin", value: `${style.margin} cells` },
-              { label: "Correction", value: style.level },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center gap-0.5 border-r border-border py-3 last:border-r-0"
-              >
-                <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-                  {label}
-                </span>
-                <span className="font-mono text-sm font-medium text-primary">{value}</span>
-              </div>
-            ))}
-          </div>
-        ) : null}
+        <div className="grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-md border border-border">
+          {[
+            { label: "Type", value: qrTypeLabels[qrType] },
+            { label: "Margin", value: `${style.margin} cells` },
+            { label: "Correction", value: style.level },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center gap-0.5 border-r border-border py-3 last:border-r-0"
+            >
+              <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+                {label}
+              </span>
+              <span className="font-mono text-sm font-medium text-primary">{value}</span>
+            </div>
+          ))}
+        </div>
 
         {hasContent ? (
           <div className="w-full max-w-xs space-y-1.5 rounded-md border border-border bg-muted p-3">
