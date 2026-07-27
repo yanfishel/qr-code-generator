@@ -366,14 +366,6 @@ export function QrGeneratorForm() {
           </Button>
         </div>
 
-        <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-          {hasContent ? (
-            <span className="text-primary">● ready to scan</span>
-          ) : (
-            "· awaiting content"
-          )}
-        </p>
-
         {hasContent ? (
           <div className="grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-md border border-border">
             {[
