@@ -1,10 +1,13 @@
 allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
+  bufferutil: false
+  core-js: false
   esbuild: true
   prisma: true
   sharp: true
   unrs-resolver: true
+  utf-8-validate: false
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
