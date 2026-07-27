@@ -125,7 +125,7 @@ export function QrGeneratorForm() {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="min-w-0 space-y-6">
           <div className="flex border-b border-border">
             {(
               [
@@ -311,7 +311,7 @@ export function QrGeneratorForm() {
         </form>
       </Form>
 
-      <div className="flex flex-col items-center gap-4 pt-5">
+      <div className="flex min-w-0 flex-col items-center gap-4 pt-5">
         <ViewfinderFrame active={hasContent} className="w-full">
           <Card className="sticky top-8 aspect-square w-full gap-0 bg-soft-gradient py-0 shadow-lg shadow-primary/10 ring-1 ring-primary/15">
             <CardContent className="flex h-full items-center justify-center p-5">
