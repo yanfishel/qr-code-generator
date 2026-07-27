@@ -1,39 +1,59 @@
 # QR Code Generator
 
-A QR code generator built with Next.js: configure content and style, download as PNG/SVG, and — for signed-in users — save a history of generated codes.
-
-## Stack
-
-- **Next.js (App Router) + TypeScript**
-- **Tailwind CSS + shadcn/ui** (Radix UI, custom theme)
-- **Prisma 6** (MySQL)
-- **Clerk** — authentication
-- **pnpm** — package manager
-- **Vitest + React Testing Library** — tests
+A QR code generator built with Next.js. Pick a content type, style the code, download it as PNG or SVG, and — once signed in — keep a history of everything you've generated.
 
 ## Features
 
-- Nine QR code types: URL, text, email, Wi-Fi, contact (vCard), SMS, phone, location, Bitcoin.
-- Style customization: foreground/background colors, size, error-correction level, margin, centered logo.
-- Download the generated code as PNG or SVG.
-- History of saved QR codes at `/history` — available only to signed-in users (Clerk); the generator itself and downloading stay public.
+- **12 content types** — URL, text, email, Wi-Fi, contact (vCard), SMS, phone, location, Bitcoin, WhatsApp, calendar event, PayPal.
+- **Style customization** — foreground/background colors, size, error-correction level, margin, and a centered logo overlay.
+- **PNG/SVG export** — download the generated code in either format.
+- **History** — signed-in users can save codes and revisit them at `/history`; the generator and downloads themselves stay public.
+
+## Tech stack
+
+| Layer | Choice |
+| --- | --- |
+| Framework | [Next.js](https://nextjs.org/) (App Router) + TypeScript |
+| UI | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com/) (Radix UI) |
+| Database | [Prisma 6](https://www.prisma.io/) (MySQL) |
+| Auth | [Clerk](https://clerk.com/) |
+| Package manager | pnpm |
+| Testing | Vitest + React Testing Library |
 
 ## Getting started
 
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- A MySQL database reachable from your machine (plus a second, empty database used only as Prisma's [shadow database](https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/shadow-database))
+- A [Clerk](https://clerk.com/) application (for sign-in)
+
+### Setup
+
 ```bash
 pnpm install
+```
+
+Create a `.env` file with:
+
+```bash
+DATABASE_URL="mysql://..."          # main database, migrations already applied
+SHADOW_DATABASE_URL="mysql://..."   # empty database, used only by `prisma migrate dev`
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="..."
+CLERK_SECRET_KEY="..."
+```
+
+> [!IMPORTANT]
+> The database user for `DATABASE_URL` can't create databases itself, so `prisma migrate dev` needs `SHADOW_DATABASE_URL` to diff migrations against. Without it, `pnpm db:migrate` fails with error `P3014`.
+
+Run the app:
+
+```bash
 pnpm dev
 ```
 
-The app will be available at [http://localhost:3000](http://localhost:3000).
-
-### Environment variables
-
-`.env` must contain:
-
-- `DATABASE_URL` — connection to the live MySQL database (migrations already applied).
-- `SHADOW_DATABASE_URL` — a separate database for `prisma migrate dev` (the DB user can't create databases, so migrations fail with `P3014` without a shadow database).
-- Clerk keys (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, etc.).
+The app is now available at [http://localhost:3000](http://localhost:3000).
 
 ## Commands
 
@@ -41,30 +61,37 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 | --- | --- |
 | `pnpm dev` | Start the dev server (Turbopack) |
 | `pnpm build` / `pnpm start` | Production build / start |
-| `pnpm lint` | ESLint |
+| `pnpm lint` | Run ESLint |
 | `pnpm test` | Run the Vitest suite once |
-| `pnpm test:watch` | Tests in watch mode |
-| `pnpm db:migrate` | `prisma migrate dev` (requires `SHADOW_DATABASE_URL`) |
-| `pnpm db:studio` | Prisma Studio |
+| `pnpm test:watch` | Run tests in watch mode |
+| `pnpm db:migrate` | Run Prisma migrations (`prisma migrate dev`) |
+| `pnpm db:studio` | Open Prisma Studio |
 
 ## Project structure
 
 ```
 src/
-  actions/     — server actions ("use server"), the only entry point to Prisma from the client
-  app/         — App Router pages (/, /history, /sign-in, /sign-up)
+  actions/       Server actions ("use server") — the only entry point to Prisma from client components
+  app/           App Router pages: / (generator), /history, /sign-in, /sign-up
   components/
-    qr/        — QR generator components (form, preview, type/error-correction selectors)
-    ui/        — shadcn/ui components (Radix UI, "nova" preset)
-  hooks/       — e.g. use-qr-download — PNG/SVG download
-  lib/         — qr-schema.ts (QR content model), current-user.ts, prisma.ts
-  proxy.ts     — Clerk route matching
+    qr/          QR generator UI: form, preview, type selector, error-correction selector
+    ui/          shadcn/ui components (Radix UI, "nova" preset)
+  hooks/         use-qr-download — PNG/SVG download logic
+  lib/           qr-schema.ts (content model), current-user.ts, prisma.ts
+  proxy.ts       Clerk route matching
 prisma/
   schema.prisma, migrations/
 ```
 
 ## QR content model
 
-`src/lib/qr-schema.ts` defines `qrTypes`, the `QrFieldValues` shape covering every type's raw inputs, and `buildQrValue(type, fields)`, which turns those inputs into the final string (`WIFI:T:...;;`, `mailto:...`, a vCard block, etc.) persisted as `QrCode.data`. Style fields (name, colors, size, error-correction level, margin, logo) are validated separately via `qrFormSchema`.
+`src/lib/qr-schema.ts` is the source of truth for what a QR code can encode:
 
-For more on architecture, the design system, and conventions, see [CLAUDE.md](./CLAUDE.md).
+- `qrTypes` — the list of supported content types, mirrored by a `QrType` enum in `prisma/schema.prisma`.
+- `QrFieldValues` — the raw per-type input shape (e.g. SSID/password for Wi-Fi, address for a vCard).
+- `buildQrValue(type, fields)` — encodes those inputs into the final string that gets persisted as `QrCode.data` (e.g. `WIFI:T:...;;`, `mailto:...`, a vCard or `BEGIN:VCALENDAR` block).
+
+Content fields (per type) and style fields (name, colors, size, error-correction level, margin, logo) are validated separately: only the derived string plus style fields go through `qrFormSchema` before being persisted.
+
+> [!NOTE]
+> For a deeper dive into architecture, the design system, and repository conventions, see [CLAUDE.md](./CLAUDE.md).
