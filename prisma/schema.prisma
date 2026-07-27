@@ -15,6 +15,18 @@ enum ErrorCorrectionLevel {
   H
 }
 
+enum QrType {
+  URL
+  TEXT
+  EMAIL
+  WIFI
+  VCARD
+  SMS
+  PHONE
+  LOCATION
+  BITCOIN
+}
+
 model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique @db.VarChar(191)
@@ -30,12 +42,15 @@ model QrCode {
   userId      String
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String?              @db.VarChar(255)
+  type        QrType               @default(TEXT)
   data        String               @db.Text
   fgColor     String               @default("#000000") @db.VarChar(9)
   bgColor     String               @default("#FFFFFF") @db.VarChar(9)
   size        Int                  @default(256)
   level       ErrorCorrectionLevel @default(M)
+  margin      Int                  @default(2)
   logoDataUrl String?              @db.LongText
+  logoSize    Int                  @default(20)
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
