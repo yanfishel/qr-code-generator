@@ -155,19 +155,6 @@ export function QrGeneratorForm() {
             <div className="space-y-4">
               <QrTypeSelector value={qrType} onChange={setQrType} />
               <QrContentFields type={qrType} fields={fields} onFieldChange={handleFieldChange} />
-              {hasContent ? (
-                <div className="space-y-1.5 rounded-md border border-border bg-muted p-3">
-                  <p className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-                    Encoded value
-                  </p>
-                  <p className="font-mono text-xs break-all text-primary">
-                    {qrValue.length > 160 ? qrValue.slice(0, 160) + "…" : qrValue}
-                  </p>
-                  <p className="font-mono text-[0.6rem] text-muted-foreground">
-                    {qrValue.length} chars
-                  </p>
-                </div>
-              ) : null}
             </div>
           ) : (
             <div className="space-y-5">
@@ -404,6 +391,18 @@ export function QrGeneratorForm() {
                 <span className="font-mono text-sm font-medium text-primary">{value}</span>
               </div>
             ))}
+          </div>
+        ) : null}
+
+        {hasContent ? (
+          <div className="w-full max-w-xs space-y-1.5 rounded-md border border-border bg-muted p-3">
+            <p className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+              Encoded value
+            </p>
+            <p className="font-mono text-xs break-all text-primary">
+              {qrValue.length > 160 ? qrValue.slice(0, 160) + "…" : qrValue}
+            </p>
+            <p className="font-mono text-[0.6rem] text-muted-foreground">{qrValue.length} chars</p>
           </div>
         ) : null}
       </div>
