@@ -11,6 +11,7 @@ Next.js (App Router) + TypeScript, pnpm, Tailwind CSS + shadcn/ui, Prisma 6 (MyS
 - `pnpm dev` — start the dev server (Turbopack)
 - `pnpm build` / `pnpm start` — production build / start
 - `pnpm lint` — ESLint
+- `pnpm test` — run the Vitest suite once; `pnpm test:watch` for watch mode
 - `pnpm db:migrate` — run Prisma migrations (`prisma migrate dev`) — requires a real `DATABASE_URL`
 - `pnpm db:studio` — Prisma Studio
 
@@ -29,6 +30,10 @@ Project-scoped Claude Code skills live in `.claude/skills/` (symlinked into `.ag
 ## Design
 
 `src/app/globals.css` defines a custom token system, not the shadcn neutral defaults — a warm off-white/near-black palette with a single teal accent (`--primary`), wired for light and dark. Fonts are Space Grotesk (`font-display`, headings), Work Sans (`font-sans`, body), and IBM Plex Mono (`font-mono`, eyebrows/labels) via `next/font/google` in `src/app/layout.tsx` — not the default Geist. The signature motif is the "viewfinder" corner brackets (`src/components/qr/ViewfinderFrame.tsx`) around the live QR preview, echoing a camera's QR-scan detection UI. `src/components/qr/Logo.tsx` is a finder-pattern monogram. Keep new UI within this system rather than reintroducing shadcn's generic neutral/Geist look.
+
+## Testing
+
+Vitest + React Testing Library (`vitest.config.ts`, `vitest.setup.ts`, jsdom environment, `@/*` alias resolved via `resolve.tsconfigPaths`). Tests live in a `__tests__` directory next to the file under test, named `[filename].test.tsx` (e.g. `src/app/history/__tests__/page.test.tsx`). Prefer mocking sibling components/actions to isolate the unit under test and assert on behavior (rendered output, calls to mocked actions) rather than implementation details.
 
 ## Conventions
 
