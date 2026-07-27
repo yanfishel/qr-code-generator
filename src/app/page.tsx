@@ -3,7 +3,7 @@ import { QrGeneratorForm } from "@/components/qr/QrGeneratorForm";
 export default function Home() {
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
+      <div className="space-y-2 border-b border-border pb-8">
         <p className="font-mono text-xs tracking-widest text-primary uppercase">
           Generate · Customize · Scan
         </p>
