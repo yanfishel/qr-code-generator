@@ -4,7 +4,6 @@ import { useMemo, useRef, useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { Download, Save, Copy, CheckCheck, Layers, Settings2 } from "lucide-react";
 
@@ -26,6 +25,10 @@ import { ViewfinderFrame } from "@/components/qr/ViewfinderFrame";
 import { QrTypeSelector } from "@/components/qr/QrTypeSelector";
 import { QrContentFields } from "@/components/qr/QrContentFields";
 import { ErrorCorrectionSelector } from "@/components/qr/ErrorCorrectionSelector";
+import { DotStyleSelector } from "@/components/qr/DotStyleSelector";
+import { FinderStyleSelector } from "@/components/qr/FinderStyleSelector";
+import { QrCanvas } from "@/components/qr/QrCanvas";
+import { QrSvg } from "@/components/qr/QrSvg";
 import { useQrDownload } from "@/hooks/use-qr-download";
 import { createQrCode } from "@/actions/qr-actions";
 import {
@@ -46,6 +49,9 @@ const styleDefaultValues: StyleFormValues = {
   bgColor: "#FFFFFF",
   size: 256,
   level: "M",
+  dotStyle: "SQUARE",
+  finderFrameStyle: "SQUARE",
+  finderMarkerStyle: "SQUARE",
   margin: 2,
   logoDataUrl: undefined,
   logoSize: 20,
@@ -181,7 +187,7 @@ export function QrGeneratorForm() {
                     <FormItem>
                       <FormLabel className={fieldLabelClassName}>Background</FormLabel>
                       <FormControl>
-                        <ColorPickerField value={field.value} onChange={field.onChange} />
+                        <ColorPickerField value={field.value} onChange={field.onChange} allowTransparent />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -191,12 +197,40 @@ export function QrGeneratorForm() {
 
               <FormField
                 control={form.control}
-                name="level"
+                name="dotStyle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Error correction</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Dot style</FormLabel>
                     <FormControl>
-                      <ErrorCorrectionSelector value={field.value} onChange={field.onChange} />
+                      <DotStyleSelector value={field.value} onChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="finderFrameStyle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClassName}>Finder frame</FormLabel>
+                    <FormControl>
+                      <FinderStyleSelector value={field.value} onChange={field.onChange} filled={false} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="finderMarkerStyle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClassName}>Finder marker</FormLabel>
+                    <FormControl>
+                      <FinderStyleSelector value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -278,6 +312,20 @@ export function QrGeneratorForm() {
                   )}
                 />
               ) : null}
+
+              <FormField
+                control={form.control}
+                name="level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClassName}>Error correction</FormLabel>
+                    <FormControl>
+                      <ErrorCorrectionSelector value={field.value} onChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           )}
 
@@ -317,7 +365,7 @@ export function QrGeneratorForm() {
             <CardContent className="flex h-full items-center justify-center p-5">
               {hasContent ? (
                 <>
-                  <QRCodeCanvas
+                  <QrCanvas
                     ref={canvasRef}
                     value={qrValue}
                     size={style.size}
@@ -325,10 +373,13 @@ export function QrGeneratorForm() {
                     bgColor={style.bgColor}
                     level={style.level}
                     marginSize={style.margin}
+                    dotStyle={style.dotStyle}
+                    finderFrameStyle={style.finderFrameStyle}
+                    finderMarkerStyle={style.finderMarkerStyle}
                     imageSettings={imageSettings}
                     style={{ width: `min(100%, ${style.size}px)`, height: "auto" }}
                   />
-                  <QRCodeSVG
+                  <QrSvg
                     ref={svgRef}
                     value={qrValue}
                     size={style.size}
@@ -336,6 +387,9 @@ export function QrGeneratorForm() {
                     bgColor={style.bgColor}
                     level={style.level}
                     marginSize={style.margin}
+                    dotStyle={style.dotStyle}
+                    finderFrameStyle={style.finderFrameStyle}
+                    finderMarkerStyle={style.finderMarkerStyle}
                     imageSettings={imageSettings}
                     className="hidden"
                   />

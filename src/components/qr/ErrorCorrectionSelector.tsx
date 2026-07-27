@@ -35,11 +35,6 @@ export function ErrorCorrectionSelector({ value, onChange }: ErrorCorrectionSele
                   : "border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
             >
-              <span
-                aria-hidden="true"
-                className="block w-1.5 rounded-full bg-current"
-                style={{ height: Math.max(4, 16 * (pct / 30)) }}
-              />
               <span className="font-mono text-xs font-semibold">{level}</span>
               <span className="font-mono text-[0.6rem] opacity-70">{pct}%</span>
             </button>
