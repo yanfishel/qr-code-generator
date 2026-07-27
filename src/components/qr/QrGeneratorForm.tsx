@@ -297,7 +297,7 @@ export function QrGeneratorForm() {
             </div>
           )}
 
-          <div className="border-t border-border pt-6">
+          <div className="space-y-3 border-t border-border pt-6">
             <FormField
               control={form.control}
               name="name"
@@ -311,12 +311,12 @@ export function QrGeneratorForm() {
                 </FormItem>
               )}
             />
-          </div>
 
-          <div className="flex justify-center">
-            <Button type="submit" disabled={!hasContent || isSaving}>
-              <Save /> {isSaving ? "Saving…" : "Save"}
-            </Button>
+            <div className="flex justify-center">
+              <Button type="submit" size="lg" className="px-8 text-base" disabled={!hasContent || isSaving}>
+                <Save className="size-5" /> {isSaving ? "Saving…" : "Save"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
