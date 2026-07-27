@@ -347,7 +347,7 @@ export function QrGeneratorForm() {
           </Card>
         </ViewfinderFrame>
 
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
           <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
             <Download /> PNG
           </Button>
