@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import type { QrCode } from "@prisma/client";
 
@@ -29,7 +30,15 @@ export function SavedQrList({ initialItems }: SavedQrListProps) {
   }
 
   if (items.length === 0) {
-    return <p className="text-muted-foreground">No saved QR codes yet.</p>;
+    return (
+      <p className="text-muted-foreground">
+        Nothing saved yet —{" "}
+        <Link href="/" className="text-primary underline-offset-4 hover:underline">
+          generate a code
+        </Link>{" "}
+        and hit Save to see it here.
+      </p>
+    );
   }
 
   return (

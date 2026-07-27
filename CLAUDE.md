@@ -16,7 +16,7 @@ Next.js (App Router) + TypeScript, pnpm, Tailwind CSS + shadcn/ui, Prisma 6 (MyS
 
 ## Database
 
-`DATABASE_URL` in `.env` currently holds a placeholder (see `.env.example`) so `prisma generate` and builds work without a live connection. Real MySQL credentials need to be added before `db:migrate` will succeed.
+`DATABASE_URL` in `.env` points at a real remote MySQL instance; migrations live in `prisma/migrations/` and have been applied. The DB user can't create databases, so `prisma migrate dev` needs a pre-provisioned `SHADOW_DATABASE_URL` (also in `.env`) — this is wired into `prisma/schema.prisma` via `shadowDatabaseUrl = env("SHADOW_DATABASE_URL")`. Without that, `db:migrate` fails with `P3014`.
 
 ## Auth
 
@@ -24,7 +24,11 @@ Auth is handled by Clerk (`@clerk/nextjs`). `ClerkProvider` wraps the app in `sr
 
 ## Skills
 
-Project-scoped Claude Code skills live in `.claude/skills/` and are tracked in `skills-lock.json`. Currently installed: `frontend-design` (from `anthropics/skills`) — use it for UI/visual design guidance when building or reshaping frontend components.
+Project-scoped Claude Code skills live in `.claude/skills/` (symlinked into `.agents/skills/`) and are tracked in `skills-lock.json`: `frontend-design` (from `anthropics/skills`) for UI/visual design work, and `clerk` / `clerk-cli` / `clerk-setup` (from `clerk/skills`, installed by `clerk init`) for Clerk-related tasks.
+
+## Design
+
+`src/app/globals.css` defines a custom token system, not the shadcn neutral defaults — a warm off-white/near-black palette with a single teal accent (`--primary`), wired for light and dark. Fonts are Space Grotesk (`font-display`, headings), Work Sans (`font-sans`, body), and IBM Plex Mono (`font-mono`, eyebrows/labels) via `next/font/google` in `src/app/layout.tsx` — not the default Geist. The signature motif is the "viewfinder" corner brackets (`src/components/qr/ViewfinderFrame.tsx`) around the live QR preview, echoing a camera's QR-scan detection UI. `src/components/qr/Logo.tsx` is a finder-pattern monogram. Keep new UI within this system rather than reintroducing shadcn's generic neutral/Geist look.
 
 ## Conventions
 

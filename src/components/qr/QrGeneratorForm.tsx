@@ -30,6 +30,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { ColorPickerField } from "@/components/qr/ColorPickerField";
 import { LogoUploader } from "@/components/qr/LogoUploader";
+import { ViewfinderFrame } from "@/components/qr/ViewfinderFrame";
 import { useQrDownload } from "@/hooks/use-qr-download";
 import { createQrCode } from "@/actions/qr-actions";
 import { errorCorrectionLevels, qrFormSchema, type QrFormValues } from "@/lib/qr-schema";
@@ -206,35 +207,44 @@ export function QrGeneratorForm() {
         </form>
       </Form>
 
-      <div className="flex items-start justify-center">
-        <Card className="sticky top-8">
-          <CardContent className="flex items-center justify-center p-8">
-            {hasContent ? (
-              <QRCodeCanvas
-                ref={canvasRef}
-                value={values.data}
-                size={values.size}
-                fgColor={values.fgColor}
-                bgColor={values.bgColor}
-                level={values.level}
-                imageSettings={
-                  values.logoDataUrl
-                    ? {
-                        src: values.logoDataUrl,
-                        height: values.size * 0.2,
-                        width: values.size * 0.2,
-                        excavate: true,
-                      }
-                    : undefined
-                }
-              />
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                Enter some content to preview the QR code
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      <div className="flex flex-col items-center gap-3">
+        <ViewfinderFrame active={hasContent}>
+          <Card className="sticky top-8 bg-dot-grid">
+            <CardContent className="flex items-center justify-center p-8">
+              {hasContent ? (
+                <QRCodeCanvas
+                  ref={canvasRef}
+                  value={values.data}
+                  size={values.size}
+                  fgColor={values.fgColor}
+                  bgColor={values.bgColor}
+                  level={values.level}
+                  imageSettings={
+                    values.logoDataUrl
+                      ? {
+                          src: values.logoDataUrl,
+                          height: values.size * 0.2,
+                          width: values.size * 0.2,
+                          excavate: true,
+                        }
+                      : undefined
+                  }
+                />
+              ) : (
+                <p className="max-w-40 text-center text-sm text-muted-foreground">
+                  Enter some content to preview the QR code
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </ViewfinderFrame>
+        <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
+          {hasContent ? (
+            <span className="text-primary">● ready to scan</span>
+          ) : (
+            "· awaiting content"
+          )}
+        </p>
       </div>
     </div>
   );

@@ -30,7 +30,7 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
   const download = useQrDownload();
 
   return (
-    <Card>
+    <Card className="transition-colors hover:border-primary/50">
       <CardContent className="flex justify-center p-4">
         <QRCodeCanvas
           ref={canvasRef}
