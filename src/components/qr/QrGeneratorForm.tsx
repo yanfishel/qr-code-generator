@@ -124,20 +124,6 @@ export function QrGeneratorForm() {
     <div className="grid gap-8 md:grid-cols-2">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name (optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="My QR code" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <div className="flex border-b border-border">
             {(
               [
@@ -311,7 +297,21 @@ export function QrGeneratorForm() {
             </div>
           )}
 
-          <div className="flex justify-end">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name (optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="My QR code" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex justify-center">
             <Button type="submit" disabled={!hasContent || isSaving}>
               <Save /> {isSaving ? "Saving…" : "Save"}
             </Button>
