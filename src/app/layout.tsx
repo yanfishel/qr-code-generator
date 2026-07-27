@@ -72,7 +72,7 @@ export default function RootLayout({
               </div>
             </nav>
           </header>
-          <main className="mx-auto max-w-4xl px-4 py-10">{children}</main>
+          <main className="mx-auto max-w-4xl px-4 pt-5 pb-10">{children}</main>
           <Toaster />
         </ClerkProvider>
       </body>
