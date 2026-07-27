@@ -311,24 +311,8 @@ export function QrGeneratorForm() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
-              <Download /> PNG
-            </Button>
-            <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
-              <Download /> SVG
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={handleCopy}
-              disabled={!hasContent}
-              aria-label="Copy QR code"
-            >
-              {copied ? <CheckCheck /> : <Copy />}
-            </Button>
-            <Button type="submit" disabled={!hasContent || isSaving} className="ml-auto">
+          <div className="flex justify-end">
+            <Button type="submit" disabled={!hasContent || isSaving}>
               <Save /> {isSaving ? "Saving…" : "Save"}
             </Button>
           </div>
@@ -371,6 +355,26 @@ export function QrGeneratorForm() {
             </CardContent>
           </Card>
         </ViewfinderFrame>
+
+        <div className="flex flex-wrap justify-center gap-3">
+          <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
+            <Download /> PNG
+          </Button>
+          <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
+            <Download /> SVG
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleCopy}
+            disabled={!hasContent}
+            aria-label="Copy QR code"
+          >
+            {copied ? <CheckCheck /> : <Copy />}
+          </Button>
+        </div>
+
         <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
           {hasContent ? (
             <span className="text-primary">● ready to scan</span>
