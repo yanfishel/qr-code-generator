@@ -138,13 +138,6 @@ export function QrGeneratorForm() {
             )}
           />
 
-          <div className="space-y-3">
-            <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-              QR code type
-            </p>
-            <QrTypeSelector value={qrType} onChange={setQrType} />
-          </div>
-
           <div className="flex border-b border-border">
             {(
               [
@@ -174,6 +167,12 @@ export function QrGeneratorForm() {
 
           {activeTab === "content" ? (
             <div className="space-y-4">
+              <div className="space-y-3">
+                <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+                  QR code type
+                </p>
+                <QrTypeSelector value={qrType} onChange={setQrType} />
+              </div>
               <QrContentFields type={qrType} fields={fields} onFieldChange={handleFieldChange} />
               {hasContent ? (
                 <div className="space-y-1.5 rounded-md border border-border bg-muted p-3">
