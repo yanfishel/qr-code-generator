@@ -321,8 +321,8 @@ export function QrGeneratorForm() {
 
       <div className="flex flex-col items-center gap-4">
         <ViewfinderFrame active={hasContent}>
-          <Card className="sticky top-8 bg-soft-gradient">
-            <CardContent className="flex items-center justify-center p-8">
+          <Card className="sticky top-8 aspect-square w-80 bg-soft-gradient shadow-lg shadow-primary/10 ring-1 ring-primary/15">
+            <CardContent className="flex h-full items-center justify-center p-8">
               {hasContent ? (
                 <>
                   <QRCodeCanvas
@@ -334,6 +334,7 @@ export function QrGeneratorForm() {
                     level={style.level}
                     marginSize={style.margin}
                     imageSettings={imageSettings}
+                    style={{ width: `min(100%, ${style.size}px)`, height: "auto" }}
                   />
                   <QRCodeSVG
                     ref={svgRef}
