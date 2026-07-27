@@ -310,7 +310,7 @@ export function QrGeneratorForm() {
             <div className="flex justify-center">
               <Button
                 type="submit"
-                variant="outline"
+                variant={hasContent && !isSaving ? "default" : "outline"}
                 size="lg"
                 className="px-8 text-sm"
                 disabled={!hasContent || isSaving}
