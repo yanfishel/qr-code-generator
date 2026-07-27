@@ -53,6 +53,8 @@ const styleDefaultValues: StyleFormValues = {
 
 type Tab = "content" | "style";
 
+const fieldLabelClassName = "font-mono text-xs font-normal tracking-wide text-muted-foreground uppercase";
+
 export function QrGeneratorForm() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -164,7 +166,7 @@ export function QrGeneratorForm() {
                   name="fgColor"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Foreground</FormLabel>
+                      <FormLabel className={fieldLabelClassName}>Foreground</FormLabel>
                       <FormControl>
                         <ColorPickerField value={field.value} onChange={field.onChange} />
                       </FormControl>
@@ -177,7 +179,7 @@ export function QrGeneratorForm() {
                   name="bgColor"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Background</FormLabel>
+                      <FormLabel className={fieldLabelClassName}>Background</FormLabel>
                       <FormControl>
                         <ColorPickerField value={field.value} onChange={field.onChange} />
                       </FormControl>
@@ -192,7 +194,7 @@ export function QrGeneratorForm() {
                 name="level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Error correction</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Error correction</FormLabel>
                     <FormControl>
                       <ErrorCorrectionSelector value={field.value} onChange={field.onChange} />
                     </FormControl>
@@ -206,7 +208,7 @@ export function QrGeneratorForm() {
                 name="size"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Size — {field.value}px</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Size — {field.value}px</FormLabel>
                     <FormControl>
                       <Slider
                         min={128}
@@ -226,7 +228,7 @@ export function QrGeneratorForm() {
                 name="margin"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Margin — {field.value} cells</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Margin — {field.value} cells</FormLabel>
                     <FormControl>
                       <Slider
                         min={0}
@@ -246,7 +248,7 @@ export function QrGeneratorForm() {
                 name="logoDataUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Logo (optional)</FormLabel>
+                    <FormLabel className={fieldLabelClassName}>Logo (optional)</FormLabel>
                     <FormControl>
                       <LogoUploader value={field.value} onChange={field.onChange} />
                     </FormControl>
@@ -261,7 +263,7 @@ export function QrGeneratorForm() {
                   name="logoSize"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Logo size — {field.value}%</FormLabel>
+                      <FormLabel className={fieldLabelClassName}>Logo size — {field.value}%</FormLabel>
                       <FormControl>
                         <Slider
                           min={10}
@@ -285,9 +287,7 @@ export function QrGeneratorForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-mono text-xs font-normal tracking-wide text-muted-foreground uppercase">
-                    Name (optional)
-                  </FormLabel>
+                  <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="My QR code" {...field} />
                   </FormControl>
