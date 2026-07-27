@@ -10,7 +10,7 @@ export default function Home() {
         <h1 className="font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           Make a QR code that looks like it&apos;s yours
         </h1>
-        <p className="max-w-xl text-muted-foreground">
+        <p className="text-muted-foreground">
           Set the colors, size, and error correction, drop in a logo, then download the PNG or
           save it for later.
         </p>
