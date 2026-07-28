@@ -21,16 +21,16 @@ import { qrTypeLabels, type QrType } from "@/lib/qr-schema";
 const TYPES: { id: QrType; icon: React.ElementType }[] = [
   { id: "URL", icon: Link },
   { id: "TEXT", icon: FileText },
-  { id: "EMAIL", icon: Mail },
-  { id: "WIFI", icon: Wifi },
   { id: "VCARD", icon: User },
-  { id: "SMS", icon: MessageSquare },
-  { id: "PHONE", icon: Phone },
+  { id: "EMAIL", icon: Mail },
   { id: "LOCATION", icon: MapPin },
-  { id: "BITCOIN", icon: Bitcoin },
+  { id: "PHONE", icon: Phone },
+  { id: "SMS", icon: MessageSquare },
   { id: "WHATSAPP", icon: MessageCircle },
   { id: "EVENT", icon: CalendarDays },
+  { id: "WIFI", icon: Wifi },
   { id: "PAYPAL", icon: Wallet },
+  { id: "BITCOIN", icon: Bitcoin },
 ];
 
 type QrTypeSelectorProps = {
