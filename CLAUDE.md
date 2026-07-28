@@ -23,6 +23,8 @@ Next.js (App Router) + TypeScript, pnpm, Tailwind CSS + shadcn/ui, Prisma 6 (MyS
 
 Auth is handled by Clerk (`@clerk/nextjs`). `ClerkProvider` wraps the app in `src/app/layout.tsx`, route matching lives in `src/proxy.ts`. `src/lib/current-user.ts#getCurrentUser` reads the signed-in user from `auth()` and lazily upserts the matching `User` row (keyed on `User.clerkId`) on first call — there is no seed script or default user anymore. `/history` calls `auth.protect()` and redirects signed-out visitors to Clerk's sign-in page; the QR generator/download on `/` stays public, only `createQrCode` (via `getCurrentUser`) requires a session.
 
+When a signed-out visitor clicks Save in `QrGeneratorForm`, it doesn't call `createQrCode` and surface the resulting `Unauthorized` error — it opens Clerk's sign-in modal (`useClerk().openSignIn()`) and retries the save automatically once `useAuth().isSignedIn` flips to true (also covering the race where the session expires between the client-side check and the server action call). The pending payload is stashed in `sessionStorage`, not a React ref/state: `.env`'s `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/` makes Clerk redirect after sign-in, which remounts the component and would wipe in-memory state before the retry could fire.
+
 ## Skills
 
 Project-scoped Claude Code skills live in `.claude/skills/` (symlinked into `.agents/skills/`) and are tracked in `skills-lock.json`: `frontend-design` (from `anthropics/skills`) for UI/visual design work, and `clerk` / `clerk-cli` / `clerk-setup` (from `clerk/skills`, installed by `clerk init`) for Clerk-related tasks.

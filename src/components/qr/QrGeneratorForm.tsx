@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { Download, Save, Copy, CheckCheck, Layers, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ import {
   qrFormSchema,
   qrTypeLabels,
   type QrFieldValues,
+  type QrFormValues,
   type QrType,
 } from "@/lib/qr-schema";
 
@@ -69,10 +71,36 @@ const fieldLabelClassName = "font-mono text-xs font-normal tracking-wide text-mu
 const accordionTriggerClassName = "px-2 font-mono text-xs tracking-wide uppercase";
 const accordionContentClassName = "px-2 pt-3 pb-7";
 
+// Clerk's post-sign-in redirect (NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL)
+// can remount this component, wiping plain React state — sessionStorage survives
+// that so the save-after-login retry still has the payload to work with.
+const PENDING_SAVE_KEY = "qr-code-generator:pending-save";
+
+function readPendingSave(): QrFormValues | null {
+  if (typeof window === "undefined") return null;
+  const raw = sessionStorage.getItem(PENDING_SAVE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as QrFormValues;
+  } catch {
+    return null;
+  }
+}
+
+function writePendingSave(payload: QrFormValues) {
+  sessionStorage.setItem(PENDING_SAVE_KEY, JSON.stringify(payload));
+}
+
+function clearPendingSave() {
+  sessionStorage.removeItem(PENDING_SAVE_KEY);
+}
+
 export function QrGeneratorForm() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const download = useQrDownload();
+  const { isSignedIn } = useAuth();
+  const { openSignIn } = useClerk();
   const [isSaving, startSaving] = useTransition();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("content");
@@ -115,17 +143,44 @@ export function QrGeneratorForm() {
     }
   }
 
-  function onSubmit(values: StyleFormValues) {
+  function saveQrCode(payload: QrFormValues) {
     startSaving(async () => {
       try {
-        const payload = qrFormSchema.parse({ ...values, type: qrType, data: qrValue });
         await createQrCode(payload);
         toast.success("QR code saved");
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.message === "Unauthorized") {
+          writePendingSave(payload);
+          openSignIn();
+          return;
+        }
         toast.error("Could not save the QR code");
       }
     });
   }
+
+  function onSubmit(values: StyleFormValues) {
+    const payload = qrFormSchema.parse({ ...values, type: qrType, data: qrValue });
+    if (!isSignedIn) {
+      writePendingSave(payload);
+      openSignIn();
+      return;
+    }
+    saveQrCode(payload);
+  }
+
+  // Once the sign-in modal (opened from onSubmit above) succeeds, isSignedIn
+  // flips to true and we finish the save the user originally asked for. This
+  // also covers Clerk's post-sign-in redirect remounting the component, since
+  // the pending payload lives in sessionStorage rather than component state.
+  useEffect(() => {
+    if (!isSignedIn) return;
+    const pending = readPendingSave();
+    if (!pending) return;
+    clearPendingSave();
+    saveQrCode(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignedIn]);
 
   const imageSettings = style.logoDataUrl
     ? {
