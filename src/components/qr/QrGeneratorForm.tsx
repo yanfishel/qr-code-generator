@@ -473,7 +473,7 @@ export function QrGeneratorForm() {
         <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
           {[
             { label: "Type", value: qrTypeLabels[qrType] },
-            { label: "Margin", value: `${style.margin} cells` },
+            { label: "Size", value: `${style.size}px` },
             { label: "Correction", value: style.level },
           ].map(({ label, value }) => (
             <div
