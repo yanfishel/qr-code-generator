@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useAuth, useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { QrCode } from "@prisma/client";
 import { Download, Save, Copy, CheckCheck, Layers, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -37,10 +40,11 @@ import { FinderStyleSelector } from "@/components/qr/FinderStyleSelector";
 import { QrCanvas } from "@/components/qr/QrCanvas";
 import { QrSvg } from "@/components/qr/QrSvg";
 import { useQrDownload } from "@/hooks/use-qr-download";
-import { createQrCode } from "@/actions/qr-actions";
+import { createQrCode, updateQrCode } from "@/actions/qr-actions";
 import {
   buildQrValue,
   defaultQrFieldValues,
+  parseQrValue,
   qrFormSchema,
   qrTypeLabels,
   type QrFieldValues,
@@ -95,21 +99,43 @@ function clearPendingSave() {
   sessionStorage.removeItem(PENDING_SAVE_KEY);
 }
 
-export function QrGeneratorForm() {
+type QrGeneratorFormProps = {
+  mode?: "create" | "edit";
+  qrCode?: QrCode;
+};
+
+export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const download = useQrDownload();
+  const router = useRouter();
   const { isSignedIn } = useAuth();
   const { openSignIn } = useClerk();
   const [isSaving, startSaving] = useTransition();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("content");
-  const [qrType, setQrType] = useState<QrType>("URL");
-  const [fields, setFields] = useState<QrFieldValues>(defaultQrFieldValues);
+  const [qrType, setQrType] = useState<QrType>(qrCode?.type ?? "URL");
+  const [fields, setFields] = useState<QrFieldValues>(() =>
+    qrCode ? parseQrValue(qrCode.type, qrCode.data) : defaultQrFieldValues,
+  );
 
   const form = useForm<StyleFormValues>({
     resolver: zodResolver(styleFormSchema),
-    defaultValues: styleDefaultValues,
+    defaultValues: qrCode
+      ? {
+          name: qrCode.name ?? "",
+          fgColor: qrCode.fgColor,
+          bgColor: qrCode.bgColor,
+          size: qrCode.size,
+          level: qrCode.level,
+          dotStyle: qrCode.dotStyle,
+          finderFrameStyle: qrCode.finderFrameStyle,
+          finderMarkerStyle: qrCode.finderMarkerStyle,
+          margin: qrCode.margin,
+          logoDataUrl: qrCode.logoDataUrl ?? undefined,
+          logoSize: qrCode.logoSize,
+        }
+      : styleDefaultValues,
   });
 
   const style = form.watch();
@@ -161,6 +187,20 @@ export function QrGeneratorForm() {
 
   function onSubmit(values: StyleFormValues) {
     const payload = qrFormSchema.parse({ ...values, type: qrType, data: qrValue });
+
+    if (mode === "edit" && qrCode) {
+      startSaving(async () => {
+        try {
+          await updateQrCode(qrCode.id, payload);
+          toast.success("Changes saved");
+          router.push("/saved");
+        } catch {
+          toast.error("Could not save changes");
+        }
+      });
+      return;
+    }
+
     if (!isSignedIn) {
       writePendingSave(payload);
       openSignIn();
@@ -173,14 +213,16 @@ export function QrGeneratorForm() {
   // flips to true and we finish the save the user originally asked for. This
   // also covers Clerk's post-sign-in redirect remounting the component, since
   // the pending payload lives in sessionStorage rather than component state.
+  // Editing is only reachable from a protected route, so this retry path is
+  // create-only.
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (mode !== "create" || !isSignedIn) return;
     const pending = readPendingSave();
     if (!pending) return;
     clearPendingSave();
     saveQrCode(pending);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignedIn]);
+  }, [isSignedIn, mode]);
 
   const imageSettings = style.logoDataUrl
     ? {
@@ -447,7 +489,12 @@ export function QrGeneratorForm() {
               )}
             />
 
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-3">
+              {mode === "edit" ? (
+                <Button type="button" variant="outline" size="lg" className="px-8 text-sm" asChild>
+                  <Link href="/saved">Cancel</Link>
+                </Button>
+              ) : null}
               <Button
                 type="submit"
                 variant={hasContent && !isSaving ? "default" : "outline"}
@@ -455,7 +502,8 @@ export function QrGeneratorForm() {
                 className="px-8 text-sm"
                 disabled={!hasContent || isSaving}
               >
-                <Save className="size-4" /> {isSaving ? "Saving…" : "Save"}
+                <Save className="size-4" />{" "}
+                {isSaving ? "Saving…" : mode === "edit" ? "Save changes" : "Save"}
               </Button>
             </div>
           </div>

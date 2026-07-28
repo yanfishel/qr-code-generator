@@ -23,6 +23,24 @@ export async function listQrCodes() {
   });
 }
 
+export async function getQrCode(id: string) {
+  const user = await getCurrentUser();
+  return prisma.qrCode.findFirst({ where: { id, userId: user.id } });
+}
+
+export async function updateQrCode(id: string, input: unknown) {
+  const parsed = qrFormSchema.parse(input);
+  const user = await getCurrentUser();
+  // updateMany with a userId guard (not update({where:{id}})) enforces
+  // ownership, same reasoning as deleteQrCode below.
+  const { count } = await prisma.qrCode.updateMany({
+    where: { id, userId: user.id },
+    data: { ...parsed, logoDataUrl: parsed.logoDataUrl ?? null },
+  });
+  if (count === 0) throw new Error("Not found");
+  revalidatePath("/saved");
+}
+
 export async function deleteQrCode(id: string) {
   const user = await getCurrentUser();
   // deleteMany with a userId guard (not delete({where:{id}})) enforces

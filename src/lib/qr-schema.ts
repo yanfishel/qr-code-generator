@@ -51,6 +51,27 @@ export const qrTypeLabels: Record<QrType, string> = {
   PAYPAL: "PayPal",
 };
 
+// A fixed 30°-apart hue rotation — one stop per type, like marks on a dial —
+// so badge colors read as a designed system rather than an arbitrary
+// per-category color pick. Combined with color-mix() against the theme's
+// background/foreground tokens (the same technique globals.css already uses
+// for tints), this stays legible and on-brand in both light and dark mode
+// without a hand-authored palette per type per theme.
+export const qrTypeAccentHue: Record<QrType, number> = {
+  LOCATION: 10,
+  BITCOIN: 40,
+  EVENT: 70,
+  TEXT: 100,
+  WHATSAPP: 130,
+  PHONE: 160,
+  WIFI: 190,
+  URL: 220,
+  PAYPAL: 250,
+  VCARD: 280,
+  EMAIL: 310,
+  SMS: 340,
+};
+
 export type QrFieldValues = {
   url: string;
   text: string;
@@ -205,6 +226,150 @@ export function buildQrValue(type: QrType, fields: QrFieldValues): string {
     default:
       return "";
   }
+}
+
+function decodeParam(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function parseQuery(query: string): Record<string, string> {
+  const params: Record<string, string> = {};
+  for (const pair of query.split("&")) {
+    if (!pair) continue;
+    const [key, value = ""] = pair.split("=");
+    params[key] = decodeParam(value);
+  }
+  return params;
+}
+
+function fromIcsDate(value: string): string {
+  const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})\d{2}$/);
+  if (!match) return "";
+  const [, year, month, day, hour, minute] = match;
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+// Best-effort inverse of buildQrValue, used only to pre-fill the edit form's
+// content fields from a previously saved `data` string. A field that fails
+// to match is left blank rather than throwing — a blank field the user can
+// refill beats a broken edit page.
+export function parseQrValue(type: QrType, data: string): QrFieldValues {
+  const fields = { ...defaultQrFieldValues };
+
+  switch (type) {
+    case "URL":
+      fields.url = data;
+      break;
+    case "TEXT":
+      fields.text = data;
+      break;
+    case "EMAIL": {
+      const match = data.match(/^mailto:([^?]*)(?:\?(.*))?$/);
+      if (match) {
+        fields.emailTo = match[1];
+        const params = match[2] ? parseQuery(match[2]) : {};
+        fields.emailSubject = params.subject ?? "";
+        fields.emailBody = params.body ?? "";
+      }
+      break;
+    }
+    case "WIFI": {
+      const match = data.match(/^WIFI:T:([^;]*);S:([^;]*);P:([^;]*);H:([^;]*);;$/);
+      if (match) {
+        fields.wifiEncryption = match[1];
+        fields.wifiSsid = match[2];
+        fields.wifiPassword = match[3];
+        fields.wifiHidden = match[4] === "true";
+      }
+      break;
+    }
+    case "VCARD": {
+      for (const line of data.split("\n")) {
+        if (line.startsWith("N:")) {
+          const [last, first] = line.slice(2).split(";");
+          fields.vcardLastName = last ?? "";
+          fields.vcardFirstName = first ?? "";
+        } else if (line.startsWith("TEL:")) {
+          fields.vcardPhone = line.slice(4);
+        } else if (line.startsWith("EMAIL:")) {
+          fields.vcardEmail = line.slice(6);
+        } else if (line.startsWith("ORG:")) {
+          fields.vcardOrg = line.slice(4);
+        } else if (line.startsWith("TITLE:")) {
+          fields.vcardTitle = line.slice(6);
+        } else if (line.startsWith("URL:")) {
+          fields.vcardWebsite = line.slice(4);
+        }
+      }
+      break;
+    }
+    case "SMS": {
+      const match = data.match(/^smsto:([^:]*):([\s\S]*)$/);
+      if (match) {
+        fields.smsPhone = match[1];
+        fields.smsMessage = match[2];
+      }
+      break;
+    }
+    case "PHONE":
+      fields.phone = data.replace(/^tel:/, "");
+      break;
+    case "LOCATION": {
+      const match = data.match(/^geo:([^,]*),(.*)$/);
+      if (match) {
+        fields.lat = match[1];
+        fields.lng = match[2];
+      }
+      break;
+    }
+    case "BITCOIN": {
+      const match = data.match(/^bitcoin:([^?]*)(?:\?(.*))?$/);
+      if (match) {
+        fields.bitcoinAddress = match[1];
+        const params = match[2] ? parseQuery(match[2]) : {};
+        fields.bitcoinAmount = params.amount ?? "";
+        fields.bitcoinLabel = params.label ?? "";
+      }
+      break;
+    }
+    case "WHATSAPP": {
+      const match = data.match(/^https:\/\/wa\.me\/([^?]*)(?:\?(.*))?$/);
+      if (match) {
+        fields.whatsappPhone = match[1];
+        const params = match[2] ? parseQuery(match[2]) : {};
+        fields.whatsappMessage = params.text ?? "";
+      }
+      break;
+    }
+    case "EVENT": {
+      for (const line of data.split("\n")) {
+        if (line.startsWith("SUMMARY:")) {
+          fields.eventTitle = line.slice(8);
+        } else if (line.startsWith("DTSTART:")) {
+          fields.eventStart = fromIcsDate(line.slice(8));
+        } else if (line.startsWith("DTEND:")) {
+          fields.eventEnd = fromIcsDate(line.slice(6));
+        } else if (line.startsWith("LOCATION:")) {
+          fields.eventLocation = line.slice(9);
+        }
+      }
+      break;
+    }
+    case "PAYPAL": {
+      const match = data.match(/^https:\/\/paypal\.me\/([^/]*)(?:\/(.*))?$/);
+      if (match) {
+        fields.paypalUsername = match[1];
+        fields.paypalAmount = match[2] ?? "";
+      }
+      break;
+    }
+  }
+
+  return fields;
 }
 
 export const qrFormSchema = z.object({

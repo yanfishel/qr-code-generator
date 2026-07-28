@@ -42,6 +42,12 @@ vi.mock("@/components/qr/QrCanvas", () => ({
   ),
 }));
 
+vi.mock("@/components/qr/QrSvg", () => ({
+  QrSvg: ({ ref, value }: { ref?: React.Ref<SVGSVGElement>; value: string }) => (
+    <svg ref={ref} data-testid="qr-svg" data-value={value} />
+  ),
+}));
+
 const { SavedQrCard } = await import("@/components/qr/SavedQrCard");
 
 function makeQrCode(overrides: Partial<QrCode> = {}): QrCode {
@@ -118,11 +124,23 @@ describe("SavedQrCard", () => {
     expect(screen.getByText("https://fallback.example")).toBeInTheDocument();
   });
 
-  it("downloads using the saved name when present", async () => {
+  it("shows a type badge with the code's type label", () => {
+    render(<SavedQrCard qrCode={makeQrCode({ type: "WIFI" })} onDelete={vi.fn()} />);
+
+    expect(screen.getByText("Wi-Fi")).toBeInTheDocument();
+  });
+
+  it("links the edit button to the code's edit page", () => {
+    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_7" })} onDelete={vi.fn()} />);
+
+    expect(screen.getByRole("link", { name: /edit/i })).toHaveAttribute("href", "/saved/qr_7/edit");
+  });
+
+  it("downloads the PNG using the canvas ref and the saved name", async () => {
     const user = userEvent.setup();
     render(<SavedQrCard qrCode={makeQrCode({ id: "qr_1", name: "Business card" })} onDelete={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: /download/i }));
+    await user.click(screen.getByRole("button", { name: "PNG" }));
 
     expect(downloadMock).toHaveBeenCalledTimes(1);
     const [canvasArg, filenameArg] = downloadMock.mock.calls[0];
@@ -130,11 +148,23 @@ describe("SavedQrCard", () => {
     expect(filenameArg).toBe("Business card");
   });
 
+  it("downloads the SVG using the svg ref and the saved name", async () => {
+    const user = userEvent.setup();
+    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_1", name: "Business card" })} onDelete={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "SVG" }));
+
+    expect(downloadMock).toHaveBeenCalledTimes(1);
+    const [svgArg, filenameArg] = downloadMock.mock.calls[0];
+    expect(svgArg.tagName.toLowerCase()).toBe("svg");
+    expect(filenameArg).toBe("Business card");
+  });
+
   it("falls back to the id as the download filename when there is no name", async () => {
     const user = userEvent.setup();
     render(<SavedQrCard qrCode={makeQrCode({ id: "qr_42", name: null })} onDelete={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: /download/i }));
+    await user.click(screen.getByRole("button", { name: "PNG" }));
 
     expect(downloadMock).toHaveBeenCalledWith(expect.any(HTMLCanvasElement), "qr_42");
   });
