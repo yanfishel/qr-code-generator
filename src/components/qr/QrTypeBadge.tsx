@@ -14,7 +14,7 @@ export function QrTypeBadge({ type, className }: QrTypeBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex w-fit shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[0.6rem] tracking-wide uppercase",
+        "inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-xs tracking-wide uppercase",
         className,
       )}
       style={{
@@ -23,7 +23,7 @@ export function QrTypeBadge({ type, className }: QrTypeBadgeProps) {
         borderColor: `color-mix(in oklch, ${accent} 35%, var(--border))`,
       }}
     >
-      <Icon className="size-3" strokeWidth={2} />
+      <Icon className="size-3.5" strokeWidth={2} />
       {qrTypeLabels[type]}
     </span>
   );

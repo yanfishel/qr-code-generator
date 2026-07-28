@@ -81,6 +81,16 @@ describe("SavedPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("breadcrumbs back to the generator", async () => {
+    authProtectMock.mockResolvedValue(undefined);
+    listQrCodesMock.mockResolvedValue([]);
+
+    const ui = await SavedPage();
+    render(ui);
+
+    expect(screen.getByRole("link", { name: "Generator" })).toHaveAttribute("href", "/");
+  });
+
   it("passes the loaded QR codes through to SavedQrList", async () => {
     const qrCodes = [makeQrCode({ id: "qr_1" }), makeQrCode({ id: "qr_2", name: "Second" })];
     authProtectMock.mockResolvedValue(undefined);
