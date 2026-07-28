@@ -5,9 +5,17 @@ import { SavedQrList } from "@/components/qr/SavedQrList";
 
 export const dynamic = "force-dynamic";
 
-export default async function SavedPage() {
+const PAGE_SIZE = 10;
+
+type SavedPageProps = {
+  searchParams: Promise<{ page?: string }>;
+};
+
+export default async function SavedPage({ searchParams }: SavedPageProps) {
   await auth.protect();
-  const qrCodes = await listQrCodes();
+  const { page: pageParam } = await searchParams;
+  const requestedPage = Number(pageParam) || 1;
+  const { items, totalCount, totalPages, page } = await listQrCodes(requestedPage, PAGE_SIZE);
 
   return (
     <div className="space-y-8">
@@ -24,7 +32,13 @@ export default async function SavedPage() {
         <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Saved</h1>
         <p className="text-muted-foreground">Every QR code you&apos;ve saved, ready to download again.</p>
       </div>
-      <SavedQrList initialItems={qrCodes} />
+      <SavedQrList
+        key={page}
+        initialItems={items}
+        isEmpty={totalCount === 0}
+        page={page}
+        totalPages={totalPages}
+      />
     </div>
   );
 }
