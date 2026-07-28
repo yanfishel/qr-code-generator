@@ -1,4 +1,4 @@
-import { ClerkProvider, Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -7,6 +7,7 @@ import { Space_Grotesk, Work_Sans, IBM_Plex_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { Logo } from "@/components/qr/Logo";
+import { Button } from "@/components/ui/button";
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -42,29 +43,34 @@ export default function RootLayout({
       <body className="bg-page-gradient">
         <ClerkProvider appearance={{ theme: shadcn }}>
           <header className="border-b border-border/70 bg-background/80 backdrop-blur-sm">
-            <nav className="mx-auto flex max-w-4xl items-center gap-7 px-4 py-4">
-              <Link href="/" className="flex items-center gap-2.5">
+            <nav className="mx-auto grid max-w-4xl grid-cols-[1fr_auto_1fr] items-center px-4 py-4">
+              <Link href="/" className="flex items-center gap-2.5 justify-self-start">
                 <Logo className="size-6 text-primary" />
-                <span className="font-display text-[0.95rem] font-semibold tracking-tight">
+                <span className="hidden font-display text-[0.95rem] font-semibold tracking-tight sm:inline">
                   QR Code Generator
                 </span>
               </Link>
-              <Link
-                href="/"
-                className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
-              >
-                Generator
-              </Link>
-              <Link
-                href="/history"
-                className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
-              >
-                History
-              </Link>
-              <div className="ml-auto flex items-center gap-3">
+              <div className="flex items-center gap-7 justify-self-center">
+                <Link
+                  href="/"
+                  className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
+                >
+                  Generator
+                </Link>
+                <Link
+                  href="/history"
+                  className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
+                >
+                  History
+                </Link>
+              </div>
+              <div className="flex items-center gap-3 justify-self-end">
                 <Show when="signed-out">
-                  <SignInButton />
-                  <SignUpButton />
+                  <SignInButton mode="modal">
+                    <Button variant="default" size="sm">
+                      Sign In
+                    </Button>
+                  </SignInButton>
                 </Show>
                 <Show when="signed-in">
                   <UserButton />
