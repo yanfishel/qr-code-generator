@@ -75,7 +75,13 @@ export function LogoUploader({ value, onChange }: LogoUploaderProps) {
     <div className="space-y-3">
       <PresetLogoPicker value={value} onChange={onChange} />
       <div className="flex items-center gap-3">
-        <Input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} />
+        <Input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="min-w-0 flex-1"
+        />
         {value ? (
           <div className="relative shrink-0">
             <img src={value} alt="Logo preview" className="size-9 rounded object-contain" />
