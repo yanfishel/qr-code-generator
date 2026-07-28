@@ -66,6 +66,8 @@ const styleDefaultValues: StyleFormValues = {
 type Tab = "content" | "style";
 
 const fieldLabelClassName = "font-mono text-xs font-normal tracking-wide text-muted-foreground uppercase";
+const accordionTriggerClassName = "px-2 font-mono text-xs tracking-wide uppercase";
+const accordionContentClassName = "px-2 pt-3 pb-7";
 
 export function QrGeneratorForm() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -173,10 +175,10 @@ export function QrGeneratorForm() {
           ) : (
             <Accordion type="single" collapsible defaultValue="color" className="-mt-1">
               <AccordionItem value="color">
-                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                <AccordionTrigger className={accordionTriggerClassName}>
                   Color
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className={accordionContentClassName}>
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -209,10 +211,10 @@ export function QrGeneratorForm() {
               </AccordionItem>
 
               <AccordionItem value="style">
-                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                <AccordionTrigger className={accordionTriggerClassName}>
                   Style
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className={accordionContentClassName}>
                   <div className="space-y-5">
                     <FormField
                       control={form.control}
@@ -260,10 +262,10 @@ export function QrGeneratorForm() {
               </AccordionItem>
 
               <AccordionItem value="size">
-                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                <AccordionTrigger className={accordionTriggerClassName}>
                   Size
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className={accordionContentClassName}>
                   <div className="space-y-5">
                     <FormField
                       control={form.control}
@@ -309,10 +311,10 @@ export function QrGeneratorForm() {
               </AccordionItem>
 
               <AccordionItem value="logo">
-                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                <AccordionTrigger className={accordionTriggerClassName}>
                   Logo
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className={accordionContentClassName}>
                   <div className="space-y-5">
                     <FormField
                       control={form.control}
@@ -354,10 +356,10 @@ export function QrGeneratorForm() {
               </AccordionItem>
 
               <AccordionItem value="quality">
-                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                <AccordionTrigger className={accordionTriggerClassName}>
                   Error correction
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className={accordionContentClassName}>
                   <FormField
                     control={form.control}
                     name="level"
