@@ -1,6 +1,7 @@
 {
   "enabledPlugins": {
     "playwright@claude-plugins-official": true,
-    "chrome-devtools-mcp@chrome-devtools-plugins": true
+    "chrome-devtools-mcp@chrome-devtools-plugins": true,
+    "security-guidance@claude-plugins-official": true
   }
 }
