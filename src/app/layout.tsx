@@ -26,7 +26,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QR Code Generator",
+  metadataBase: new URL("https://qrframe.pro"),
+  title: "QRFrame",
   description: "Generate and save customizable QR codes",
 };
 
@@ -47,7 +48,7 @@ export default function RootLayout({
               <Link href="/" className="flex items-center gap-2.5 justify-self-start">
                 <Logo className="size-6 text-primary" />
                 <span className="hidden font-display text-[0.95rem] font-semibold tracking-tight sm:inline">
-                  QR Code Generator
+                  QRFrame
                 </span>
               </Link>
               <div className="flex items-center gap-7 justify-self-center">

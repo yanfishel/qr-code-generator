@@ -74,7 +74,7 @@ const accordionContentClassName = "px-2 pt-3 pb-7";
 // Clerk's post-sign-in redirect (NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL)
 // can remount this component, wiping plain React state — sessionStorage survives
 // that so the save-after-login retry still has the payload to work with.
-const PENDING_SAVE_KEY = "qr-code-generator:pending-save";
+const PENDING_SAVE_KEY = "qrframe:pending-save";
 
 function readPendingSave(): QrFormValues | null {
   if (typeof window === "undefined") return null;
