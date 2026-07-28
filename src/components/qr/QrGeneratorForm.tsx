@@ -19,6 +19,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { ColorPickerField } from "@/components/qr/ColorPickerField";
 import { LogoUploader } from "@/components/qr/LogoUploader";
 import { ViewfinderFrame } from "@/components/qr/ViewfinderFrame";
@@ -165,168 +171,208 @@ export function QrGeneratorForm() {
               <QrContentFields type={qrType} fields={fields} onFieldChange={handleFieldChange} />
             </div>
           ) : (
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="fgColor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={fieldLabelClassName}>Foreground</FormLabel>
-                      <FormControl>
-                        <ColorPickerField value={field.value} onChange={field.onChange} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="bgColor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={fieldLabelClassName}>Background</FormLabel>
-                      <FormControl>
-                        <ColorPickerField value={field.value} onChange={field.onChange} allowTransparent />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <Accordion type="single" collapsible defaultValue="color" className="-mt-1">
+              <AccordionItem value="color">
+                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                  Color
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="fgColor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Foreground</FormLabel>
+                          <FormControl>
+                            <ColorPickerField value={field.value} onChange={field.onChange} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="bgColor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Background</FormLabel>
+                          <FormControl>
+                            <ColorPickerField value={field.value} onChange={field.onChange} allowTransparent />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-              <FormField
-                control={form.control}
-                name="dotStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Dot style</FormLabel>
-                    <FormControl>
-                      <DotStyleSelector value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <AccordionItem value="style">
+                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                  Style
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="dotStyle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Dot style</FormLabel>
+                          <FormControl>
+                            <DotStyleSelector value={field.value} onChange={field.onChange} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="finderFrameStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Finder frame</FormLabel>
-                    <FormControl>
-                      <FinderStyleSelector value={field.value} onChange={field.onChange} filled={false} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name="finderFrameStyle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Finder frame</FormLabel>
+                          <FormControl>
+                            <FinderStyleSelector value={field.value} onChange={field.onChange} filled={false} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="finderMarkerStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Finder marker</FormLabel>
-                    <FormControl>
-                      <FinderStyleSelector value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name="finderMarkerStyle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Finder marker</FormLabel>
+                          <FormControl>
+                            <FinderStyleSelector value={field.value} onChange={field.onChange} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-              <FormField
-                control={form.control}
-                name="size"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Size — {field.value}px</FormLabel>
-                    <FormControl>
-                      <Slider
-                        min={128}
-                        max={1024}
-                        step={32}
-                        value={[field.value]}
-                        onValueChange={([v]) => field.onChange(v)}
+              <AccordionItem value="size">
+                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                  Size
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Size — {field.value}px</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={128}
+                              max={1024}
+                              step={32}
+                              value={[field.value]}
+                              onValueChange={([v]) => field.onChange(v)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="margin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Margin — {field.value} cells</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={0}
+                              max={10}
+                              step={1}
+                              value={[field.value]}
+                              onValueChange={([v]) => field.onChange(v)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="logo">
+                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                  Logo
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="logoDataUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={fieldLabelClassName}>Logo (optional)</FormLabel>
+                          <FormControl>
+                            <LogoUploader value={field.value} onChange={field.onChange} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {style.logoDataUrl ? (
+                      <FormField
+                        control={form.control}
+                        name="logoSize"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className={fieldLabelClassName}>Logo size — {field.value}%</FormLabel>
+                            <FormControl>
+                              <Slider
+                                min={10}
+                                max={40}
+                                step={1}
+                                value={[field.value]}
+                                onValueChange={([v]) => field.onChange(v)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    ) : null}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-              <FormField
-                control={form.control}
-                name="margin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Margin — {field.value} cells</FormLabel>
-                    <FormControl>
-                      <Slider
-                        min={0}
-                        max={10}
-                        step={1}
-                        value={[field.value]}
-                        onValueChange={([v]) => field.onChange(v)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="logoDataUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Logo (optional)</FormLabel>
-                    <FormControl>
-                      <LogoUploader value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {style.logoDataUrl ? (
-                <FormField
-                  control={form.control}
-                  name="logoSize"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={fieldLabelClassName}>Logo size — {field.value}%</FormLabel>
-                      <FormControl>
-                        <Slider
-                          min={10}
-                          max={40}
-                          step={1}
-                          value={[field.value]}
-                          onValueChange={([v]) => field.onChange(v)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ) : null}
-
-              <FormField
-                control={form.control}
-                name="level"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={fieldLabelClassName}>Error correction</FormLabel>
-                    <FormControl>
-                      <ErrorCorrectionSelector value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <AccordionItem value="quality">
+                <AccordionTrigger className="font-mono text-xs tracking-wide uppercase">
+                  Error correction
+                </AccordionTrigger>
+                <AccordionContent>
+                  <FormField
+                    control={form.control}
+                    name="level"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <ErrorCorrectionSelector value={field.value} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
 
           <div className="space-y-3 border-t border-border pt-6">
