@@ -47,9 +47,7 @@ export default function RootLayout({
             <nav className="mx-auto grid max-w-4xl grid-cols-[1fr_auto_1fr] items-center px-4 py-4">
               <Link href="/" className="flex items-center gap-2.5 justify-self-start">
                 <Logo className="size-6 text-primary" />
-                <span className="hidden font-display text-[0.95rem] font-semibold tracking-tight sm:inline">
-                  QRFrame
-                </span>
+                <span className="hidden font-display text-[1rem] font-semibold tracking-tight sm:inline">QR FRAME</span>
               </Link>
               <div className="flex items-center gap-7 justify-self-center">
                 <Link
