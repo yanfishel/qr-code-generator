@@ -7,6 +7,12 @@ import type { QrCode } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { QrCanvas } from "@/components/qr/QrCanvas";
 import { QrSvg } from "@/components/qr/QrSvg";
 import { QrTypeBadge } from "@/components/qr/QrTypeBadge";
@@ -21,6 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQrDownload } from "@/hooks/use-qr-download";
 
 type SavedQrCardProps = {
@@ -79,49 +86,74 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-3">
         <p className="truncate text-sm font-medium">{qrCode.name || qrCode.data}</p>
-        <div className="flex flex-col gap-2 border-t border-border pt-3">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => download(canvasRef.current, qrCode.name || qrCode.id)}
-            >
-              <Download /> PNG
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => download(svgRef.current, qrCode.name || qrCode.id)}
-            >
-              <Download /> SVG
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1" asChild>
-              <Link href={`/saved/${qrCode.id}/edit`}>
-                <Pencil /> Edit
-              </Link>
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="icon-sm" aria-label="Delete">
-                  <Trash2 />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this QR code?</AlertDialogTitle>
-                  <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(qrCode.id)}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+        <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon-sm" className="cursor-pointer" aria-label="Download">
+                    <Download />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Download</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem
+                onSelect={() => download(canvasRef.current, qrCode.name || qrCode.id)}
+              >
+                Download PNG
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => download(svgRef.current, qrCode.name || qrCode.id)}
+              >
+                Download SVG
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="cursor-pointer text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400"
+                aria-label="Edit"
+                asChild
+              >
+                <Link href={`/saved/${qrCode.id}/edit`}>
+                  <Pencil />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit</TooltipContent>
+          </Tooltip>
+          <AlertDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    className="cursor-pointer text-destructive hover:text-destructive"
+                    aria-label="Delete"
+                  >
+                    <Trash2 />
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Delete</TooltipContent>
+            </Tooltip>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this QR code?</AlertDialogTitle>
+                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(qrCode.id)}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardFooter>
     </Card>

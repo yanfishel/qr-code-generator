@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { QrCode } from "@prisma/client";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+function renderCard(ui: React.ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>);
+}
 
 const downloadMock = vi.fn();
 vi.mock("@/hooks/use-qr-download", () => ({
@@ -80,7 +85,7 @@ describe("SavedQrCard", () => {
 
   it("renders the QR canvas with the code's data and styling", () => {
     const qrCode = makeQrCode();
-    render(<SavedQrCard qrCode={qrCode} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={qrCode} onDelete={vi.fn()} />);
 
     const canvas = screen.getByTestId("qr-canvas");
     expect(canvas).toHaveAttribute("data-value", "https://example.com");
@@ -91,13 +96,13 @@ describe("SavedQrCard", () => {
   });
 
   it("omits imageSettings when there is no logo", () => {
-    render(<SavedQrCard qrCode={makeQrCode({ logoDataUrl: null })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ logoDataUrl: null })} onDelete={vi.fn()} />);
 
     expect(screen.getByTestId("qr-canvas")).toHaveAttribute("data-logo", "");
   });
 
   it("passes the logo through to imageSettings when present", () => {
-    render(
+    renderCard(
       <SavedQrCard
         qrCode={makeQrCode({ logoDataUrl: "data:image/png;base64,abc" })}
         onDelete={vi.fn()}
@@ -108,13 +113,13 @@ describe("SavedQrCard", () => {
   });
 
   it("displays the saved name when present", () => {
-    render(<SavedQrCard qrCode={makeQrCode({ name: "Business card" })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ name: "Business card" })} onDelete={vi.fn()} />);
 
     expect(screen.getByText("Business card")).toBeInTheDocument();
   });
 
   it("falls back to the raw data as the label when there is no name", () => {
-    render(
+    renderCard(
       <SavedQrCard
         qrCode={makeQrCode({ name: null, data: "https://fallback.example" })}
         onDelete={vi.fn()}
@@ -125,22 +130,23 @@ describe("SavedQrCard", () => {
   });
 
   it("shows a type badge with the code's type label", () => {
-    render(<SavedQrCard qrCode={makeQrCode({ type: "WIFI" })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ type: "WIFI" })} onDelete={vi.fn()} />);
 
     expect(screen.getByText("Wi-Fi")).toBeInTheDocument();
   });
 
   it("links the edit button to the code's edit page", () => {
-    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_7" })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ id: "qr_7" })} onDelete={vi.fn()} />);
 
     expect(screen.getByRole("link", { name: /edit/i })).toHaveAttribute("href", "/saved/qr_7/edit");
   });
 
   it("downloads the PNG using the canvas ref and the saved name", async () => {
     const user = userEvent.setup();
-    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_1", name: "Business card" })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ id: "qr_1", name: "Business card" })} onDelete={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "PNG" }));
+    await user.click(screen.getByRole("button", { name: "Download" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Download PNG" }));
 
     expect(downloadMock).toHaveBeenCalledTimes(1);
     const [canvasArg, filenameArg] = downloadMock.mock.calls[0];
@@ -150,9 +156,10 @@ describe("SavedQrCard", () => {
 
   it("downloads the SVG using the svg ref and the saved name", async () => {
     const user = userEvent.setup();
-    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_1", name: "Business card" })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ id: "qr_1", name: "Business card" })} onDelete={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "SVG" }));
+    await user.click(screen.getByRole("button", { name: "Download" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Download SVG" }));
 
     expect(downloadMock).toHaveBeenCalledTimes(1);
     const [svgArg, filenameArg] = downloadMock.mock.calls[0];
@@ -162,9 +169,10 @@ describe("SavedQrCard", () => {
 
   it("falls back to the id as the download filename when there is no name", async () => {
     const user = userEvent.setup();
-    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_42", name: null })} onDelete={vi.fn()} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ id: "qr_42", name: null })} onDelete={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "PNG" }));
+    await user.click(screen.getByRole("button", { name: "Download" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Download PNG" }));
 
     expect(downloadMock).toHaveBeenCalledWith(expect.any(HTMLCanvasElement), "qr_42");
   });
@@ -172,7 +180,7 @@ describe("SavedQrCard", () => {
   it("asks for confirmation before deleting and does not delete on cancel", async () => {
     const user = userEvent.setup();
     const onDelete = vi.fn();
-    render(<SavedQrCard qrCode={makeQrCode()} onDelete={onDelete} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode()} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(await screen.findByText("Delete this QR code?")).toBeInTheDocument();
@@ -185,7 +193,7 @@ describe("SavedQrCard", () => {
   it("calls onDelete with the code's id when the deletion is confirmed", async () => {
     const user = userEvent.setup();
     const onDelete = vi.fn();
-    render(<SavedQrCard qrCode={makeQrCode({ id: "qr_99" })} onDelete={onDelete} />);
+    renderCard(<SavedQrCard qrCode={makeQrCode({ id: "qr_99" })} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
     const confirmButtons = await screen.findAllByRole("button", { name: "Delete" });
