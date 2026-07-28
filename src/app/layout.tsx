@@ -58,10 +58,10 @@ export default function RootLayout({
                   Generator
                 </Link>
                 <Link
-                  href="/history"
+                  href="/saved"
                   className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
                 >
-                  History
+                  Saved
                 </Link>
               </div>
               <div className="flex items-center gap-3 justify-self-end">

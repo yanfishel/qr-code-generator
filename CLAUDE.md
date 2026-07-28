@@ -21,7 +21,7 @@ Next.js (App Router) + TypeScript, pnpm, Tailwind CSS + shadcn/ui, Prisma 6 (MyS
 
 ## Auth
 
-Auth is handled by Clerk (`@clerk/nextjs`). `ClerkProvider` wraps the app in `src/app/layout.tsx`, route matching lives in `src/proxy.ts`. `src/lib/current-user.ts#getCurrentUser` reads the signed-in user from `auth()` and lazily upserts the matching `User` row (keyed on `User.clerkId`) on first call — there is no seed script or default user anymore. `/history` calls `auth.protect()` and redirects signed-out visitors to Clerk's sign-in page; the QR generator/download on `/` stays public, only `createQrCode` (via `getCurrentUser`) requires a session.
+Auth is handled by Clerk (`@clerk/nextjs`). `ClerkProvider` wraps the app in `src/app/layout.tsx`, route matching lives in `src/proxy.ts`. `src/lib/current-user.ts#getCurrentUser` reads the signed-in user from `auth()` and lazily upserts the matching `User` row (keyed on `User.clerkId`) on first call — there is no seed script or default user anymore. `/saved` calls `auth.protect()` and redirects signed-out visitors to Clerk's sign-in page; the QR generator/download on `/` stays public, only `createQrCode` (via `getCurrentUser`) requires a session.
 
 When a signed-out visitor clicks Save in `QrGeneratorForm`, it doesn't call `createQrCode` and surface the resulting `Unauthorized` error — it opens Clerk's sign-in modal (`useClerk().openSignIn()`) and retries the save automatically once `useAuth().isSignedIn` flips to true (also covering the race where the session expires between the client-side check and the server action call). The pending payload is stashed in `sessionStorage`, not a React ref/state: `.env`'s `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/` makes Clerk redirect after sign-in, which remounts the component and would wipe in-memory state before the retry could fire.
 
@@ -61,7 +61,7 @@ Preset logos (`src/lib/logo-presets.ts`, picked via `PresetLogoPicker`) are inli
 
 ## Testing
 
-Vitest + React Testing Library (`vitest.config.ts`, `vitest.setup.ts`, jsdom environment, `@/*` alias resolved via `resolve.tsconfigPaths`). Tests live in a `__tests__` directory next to the file under test, named `[filename].test.tsx` (e.g. `src/app/history/__tests__/page.test.tsx`). Prefer mocking sibling components/actions to isolate the unit under test and assert on behavior (rendered output, calls to mocked actions) rather than implementation details.
+Vitest + React Testing Library (`vitest.config.ts`, `vitest.setup.ts`, jsdom environment, `@/*` alias resolved via `resolve.tsconfigPaths`). Tests live in a `__tests__` directory next to the file under test, named `[filename].test.tsx` (e.g. `src/app/saved/__tests__/page.test.tsx`). Prefer mocking sibling components/actions to isolate the unit under test and assert on behavior (rendered output, calls to mocked actions) rather than implementation details.
 
 jsdom's `canvas.getContext("2d")` returns `null` (no `canvas` npm package installed), so `QrCanvas` can't be exercised directly — its draw effect just bails out early in tests. QR-rendering coverage instead lives in `src/lib/__tests__/qr-render.test.ts` (pure `buildQrLayout` geometry: module count, excavation, finder origins) and `QrSvg.test.tsx` (renders real markup in jsdom since SVG elements need no canvas backend) — `QrCanvas` and `QrSvg` share the same layout/geometry, so the SVG output stands in for both.
 
@@ -69,5 +69,5 @@ jsdom's `canvas.getContext("2d")` returns `null` (no `canvas` npm package instal
 
 - shadcn/ui components live in `src/components/ui/` (Radix UI base, "nova" preset); app-specific components live in `src/components/qr/`.
 - Server actions (`src/actions/`) use `"use server"` and are the only way client components touch Prisma — do not call `prisma` directly from client components.
-- `src/app/history/page.tsx` is `force-dynamic` since it reads from the database and must not be attempted during static generation.
+- `src/app/saved/page.tsx` is `force-dynamic` since it reads from the database and must not be attempted during static generation.
 - `useQrDownload` (`src/hooks/use-qr-download.ts`) accepts either an `HTMLCanvasElement` (→ PNG) or an `SVGSVGElement` (→ SVG) and branches on `instanceof`; pass the right ref rather than adding a second hook.

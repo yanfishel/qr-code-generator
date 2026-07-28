@@ -21,7 +21,7 @@ vi.mock("@/components/qr/SavedQrList", () => ({
 }));
 
 // Imported after the mocks above so the module under test picks them up.
-const { default: HistoryPage } = await import("@/app/history/page");
+const { default: SavedPage } = await import("@/app/saved/page");
 
 function makeQrCode(overrides: Partial<QrCode> = {}): QrCode {
   return {
@@ -46,7 +46,7 @@ function makeQrCode(overrides: Partial<QrCode> = {}): QrCode {
   };
 }
 
-describe("HistoryPage", () => {
+describe("SavedPage", () => {
   beforeEach(() => {
     authProtectMock.mockReset();
     listQrCodesMock.mockReset();
@@ -62,7 +62,7 @@ describe("HistoryPage", () => {
       return [];
     });
 
-    await HistoryPage();
+    await SavedPage();
 
     expect(callOrder).toEqual(["protect", "list"]);
   });
@@ -71,11 +71,11 @@ describe("HistoryPage", () => {
     authProtectMock.mockResolvedValue(undefined);
     listQrCodesMock.mockResolvedValue([]);
 
-    const ui = await HistoryPage();
+    const ui = await SavedPage();
     render(ui);
 
     expect(screen.getByText("Saved codes")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "History", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Saved", level: 1 })).toBeInTheDocument();
     expect(
       screen.getByText("Every QR code you've saved, ready to download again."),
     ).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe("HistoryPage", () => {
     authProtectMock.mockResolvedValue(undefined);
     listQrCodesMock.mockResolvedValue(qrCodes);
 
-    const ui = await HistoryPage();
+    const ui = await SavedPage();
     render(ui);
 
     const list = screen.getByTestId("saved-qr-list");
@@ -100,7 +100,7 @@ describe("HistoryPage", () => {
     authProtectMock.mockResolvedValue(undefined);
     listQrCodesMock.mockResolvedValue([]);
 
-    const ui = await HistoryPage();
+    const ui = await SavedPage();
     render(ui);
 
     const list = screen.getByTestId("saved-qr-list");
@@ -112,7 +112,7 @@ describe("HistoryPage", () => {
     authProtectMock.mockRejectedValue(redirectError);
     listQrCodesMock.mockResolvedValue([]);
 
-    await expect(HistoryPage()).rejects.toThrow("NEXT_REDIRECT");
+    await expect(SavedPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(listQrCodesMock).not.toHaveBeenCalled();
   });
 
@@ -120,6 +120,6 @@ describe("HistoryPage", () => {
     authProtectMock.mockResolvedValue(undefined);
     listQrCodesMock.mockRejectedValue(new Error("Database unavailable"));
 
-    await expect(HistoryPage()).rejects.toThrow("Database unavailable");
+    await expect(SavedPage()).rejects.toThrow("Database unavailable");
   });
 });
