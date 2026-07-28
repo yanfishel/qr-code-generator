@@ -1,4 +1,4 @@
-# QR Code Generator
+# QRFrame
 
 A QR code generator built with Next.js. Pick a content type, style the code, download it as PNG or SVG, and — once signed in — save the codes you've generated.
 
