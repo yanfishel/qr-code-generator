@@ -1,13 +1,13 @@
 # QR Code Generator
 
-A QR code generator built with Next.js. Pick a content type, style the code, download it as PNG or SVG, and — once signed in — keep a history of everything you've generated.
+A QR code generator built with Next.js. Pick a content type, style the code, download it as PNG or SVG, and — once signed in — save the codes you've generated.
 
 ## Features
 
 - **12 content types** — URL, text, email, Wi-Fi, contact (vCard), SMS, phone, location, Bitcoin, WhatsApp, calendar event, PayPal.
 - **Style customization** — foreground/background colors, size, error-correction level, margin, and a centered logo overlay.
 - **PNG/SVG export** — download the generated code in either format.
-- **History** — signed-in users can save codes and revisit them at `/history`; the generator and downloads themselves stay public.
+- **Saved codes** — signed-in users can save codes and revisit them at `/saved`; the generator and downloads themselves stay public.
 
 ## Tech stack
 
@@ -72,7 +72,7 @@ The app is now available at [http://localhost:3000](http://localhost:3000).
 ```
 src/
   actions/       Server actions ("use server") — the only entry point to Prisma from client components
-  app/           App Router pages: / (generator), /history, /sign-in, /sign-up
+  app/           App Router pages: / (generator), /saved, /sign-in, /sign-up
   components/
     qr/          QR generator UI: form, preview, type selector, error-correction selector
     ui/          shadcn/ui components (Radix UI, "nova" preset)

@@ -11,7 +11,7 @@ export async function createQrCode(input: unknown) {
   const qr = await prisma.qrCode.create({
     data: { userId: user.id, ...parsed, logoDataUrl: parsed.logoDataUrl ?? null },
   });
-  revalidatePath("/history");
+  revalidatePath("/saved");
   return qr;
 }
 
@@ -28,5 +28,5 @@ export async function deleteQrCode(id: string) {
   // deleteMany with a userId guard (not delete({where:{id}})) enforces
   // ownership — stays correct once Clerk introduces multiple real users.
   await prisma.qrCode.deleteMany({ where: { id, userId: user.id } });
-  revalidatePath("/history");
+  revalidatePath("/saved");
 }
