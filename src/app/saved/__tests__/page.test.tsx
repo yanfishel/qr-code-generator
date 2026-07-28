@@ -15,8 +15,20 @@ vi.mock("@/actions/qr-actions", () => ({
 }));
 
 vi.mock("@/components/qr/SavedQrList", () => ({
-  SavedQrList: ({ initialItems }: { initialItems: QrCode[] }) => (
-    <div data-testid="saved-qr-list">{JSON.stringify(initialItems)}</div>
+  SavedQrList: ({
+    initialItems,
+    isEmpty,
+    page,
+    totalPages,
+  }: {
+    initialItems: QrCode[];
+    isEmpty: boolean;
+    page: number;
+    totalPages: number;
+  }) => (
+    <div data-testid="saved-qr-list" data-is-empty={isEmpty} data-page={page} data-total-pages={totalPages}>
+      {JSON.stringify(initialItems)}
+    </div>
   ),
 }));
 
@@ -46,6 +58,25 @@ function makeQrCode(overrides: Partial<QrCode> = {}): QrCode {
   };
 }
 
+function makeListResult(overrides: Partial<{
+  items: QrCode[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+}> = {}) {
+  return {
+    items: [],
+    totalCount: 0,
+    totalPages: 1,
+    page: 1,
+    ...overrides,
+  };
+}
+
+function renderPage(pageParam?: string) {
+  return SavedPage({ searchParams: Promise.resolve(pageParam ? { page: pageParam } : {}) });
+}
+
 describe("SavedPage", () => {
   beforeEach(() => {
     authProtectMock.mockReset();
@@ -59,19 +90,19 @@ describe("SavedPage", () => {
     });
     listQrCodesMock.mockImplementation(async () => {
       callOrder.push("list");
-      return [];
+      return makeListResult();
     });
 
-    await SavedPage();
+    await renderPage();
 
     expect(callOrder).toEqual(["protect", "list"]);
   });
 
   it("renders the page heading and description", async () => {
     authProtectMock.mockResolvedValue(undefined);
-    listQrCodesMock.mockResolvedValue([]);
+    listQrCodesMock.mockResolvedValue(makeListResult());
 
-    const ui = await SavedPage();
+    const ui = await renderPage();
     render(ui);
 
     expect(screen.getByText("Saved codes")).toBeInTheDocument();
@@ -81,12 +112,42 @@ describe("SavedPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("passes the loaded QR codes through to SavedQrList", async () => {
+  it("breadcrumbs back to the generator", async () => {
+    authProtectMock.mockResolvedValue(undefined);
+    listQrCodesMock.mockResolvedValue(makeListResult());
+
+    const ui = await renderPage();
+    render(ui);
+
+    expect(screen.getByRole("link", { name: "Generator" })).toHaveAttribute("href", "/");
+  });
+
+  it("defaults to page 1 and a page size of 10 when no page param is given", async () => {
+    authProtectMock.mockResolvedValue(undefined);
+    listQrCodesMock.mockResolvedValue(makeListResult());
+
+    await renderPage();
+
+    expect(listQrCodesMock).toHaveBeenCalledWith(1, 10);
+  });
+
+  it("passes the requested page number through to listQrCodes", async () => {
+    authProtectMock.mockResolvedValue(undefined);
+    listQrCodesMock.mockResolvedValue(makeListResult({ page: 2 }));
+
+    await renderPage("2");
+
+    expect(listQrCodesMock).toHaveBeenCalledWith(2, 10);
+  });
+
+  it("passes the loaded QR codes and pagination info through to SavedQrList", async () => {
     const qrCodes = [makeQrCode({ id: "qr_1" }), makeQrCode({ id: "qr_2", name: "Second" })];
     authProtectMock.mockResolvedValue(undefined);
-    listQrCodesMock.mockResolvedValue(qrCodes);
+    listQrCodesMock.mockResolvedValue(
+      makeListResult({ items: qrCodes, totalCount: 2, totalPages: 1, page: 1 }),
+    );
 
-    const ui = await SavedPage();
+    const ui = await renderPage();
     render(ui);
 
     const list = screen.getByTestId("saved-qr-list");
@@ -94,25 +155,28 @@ describe("SavedPage", () => {
     expect(rendered).toHaveLength(2);
     expect(rendered[0].id).toBe("qr_1");
     expect(rendered[1].id).toBe("qr_2");
+    expect(list).toHaveAttribute("data-is-empty", "false");
+    expect(list).toHaveAttribute("data-page", "1");
+    expect(list).toHaveAttribute("data-total-pages", "1");
   });
 
-  it("renders SavedQrList with an empty array when the user has no saved codes", async () => {
+  it("marks the list empty when there are no saved codes at all", async () => {
     authProtectMock.mockResolvedValue(undefined);
-    listQrCodesMock.mockResolvedValue([]);
+    listQrCodesMock.mockResolvedValue(makeListResult({ totalCount: 0 }));
 
-    const ui = await SavedPage();
+    const ui = await renderPage();
     render(ui);
 
     const list = screen.getByTestId("saved-qr-list");
-    expect(JSON.parse(list.textContent ?? "null")).toEqual([]);
+    expect(list).toHaveAttribute("data-is-empty", "true");
   });
 
   it("propagates the redirect when the visitor is signed out", async () => {
     const redirectError = new Error("NEXT_REDIRECT");
     authProtectMock.mockRejectedValue(redirectError);
-    listQrCodesMock.mockResolvedValue([]);
+    listQrCodesMock.mockResolvedValue(makeListResult());
 
-    await expect(SavedPage()).rejects.toThrow("NEXT_REDIRECT");
+    await expect(renderPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(listQrCodesMock).not.toHaveBeenCalled();
   });
 
@@ -120,6 +184,6 @@ describe("SavedPage", () => {
     authProtectMock.mockResolvedValue(undefined);
     listQrCodesMock.mockRejectedValue(new Error("Database unavailable"));
 
-    await expect(SavedPage()).rejects.toThrow("Database unavailable");
+    await expect(renderPage()).rejects.toThrow("Database unavailable");
   });
 });

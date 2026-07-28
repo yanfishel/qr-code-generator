@@ -60,16 +60,16 @@ describe("SavedQrList", () => {
   });
 
   it("shows an empty state with a link back to the generator when there is nothing saved", () => {
-    render(<SavedQrList initialItems={[]} />);
+    render(<SavedQrList initialItems={[]} isEmpty page={1} totalPages={1} />);
 
     expect(screen.getByText(/nothing saved yet/i)).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "generate a code" });
     expect(link).toHaveAttribute("href", "/");
   });
 
-  it("renders a card for each saved QR code", () => {
+  it("renders a card for each saved QR code on the current page", () => {
     const items = [makeQrCode({ id: "qr_1", name: "First" }), makeQrCode({ id: "qr_2", name: "Second" })];
-    render(<SavedQrList initialItems={items} />);
+    render(<SavedQrList initialItems={items} isEmpty={false} page={1} totalPages={1} />);
 
     expect(screen.getByText("First")).toBeInTheDocument();
     expect(screen.getByText("Second")).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe("SavedQrList", () => {
     const user = userEvent.setup();
     deleteQrCodeMock.mockResolvedValue(undefined);
     const items = [makeQrCode({ id: "qr_1", name: "First" }), makeQrCode({ id: "qr_2", name: "Second" })];
-    render(<SavedQrList initialItems={items} />);
+    render(<SavedQrList initialItems={items} isEmpty={false} page={1} totalPages={1} />);
 
     await user.click(screen.getByRole("button", { name: "Delete First" }));
 
@@ -93,7 +93,7 @@ describe("SavedQrList", () => {
     const user = userEvent.setup();
     deleteQrCodeMock.mockRejectedValue(new Error("network error"));
     const items = [makeQrCode({ id: "qr_1", name: "First" })];
-    render(<SavedQrList initialItems={items} />);
+    render(<SavedQrList initialItems={items} isEmpty={false} page={1} totalPages={1} />);
 
     await user.click(screen.getByRole("button", { name: "Delete First" }));
 
@@ -101,13 +101,69 @@ describe("SavedQrList", () => {
     expect(toastErrorMock).toHaveBeenCalledWith("Could not delete the QR code");
   });
 
-  it("shows the empty state again once the last item is deleted", async () => {
-    const user = userEvent.setup();
-    deleteQrCodeMock.mockResolvedValue(undefined);
-    render(<SavedQrList initialItems={[makeQrCode({ id: "qr_1", name: "Only" })]} />);
+  describe("pagination", () => {
+    it("does not show pagination controls when there is only one page", () => {
+      render(
+        <SavedQrList
+          initialItems={[makeQrCode({ id: "qr_1", name: "First" })]}
+          isEmpty={false}
+          page={1}
+          totalPages={1}
+        />,
+      );
 
-    await user.click(screen.getByRole("button", { name: "Delete Only" }));
+      expect(screen.queryByRole("navigation", { name: "pagination" })).not.toBeInTheDocument();
+    });
 
-    expect(await screen.findByText(/nothing saved yet/i)).toBeInTheDocument();
+    it("links each page number to /saved?page=N and marks the current page active", () => {
+      render(
+        <SavedQrList
+          initialItems={[makeQrCode({ id: "qr_1", name: "First" })]}
+          isEmpty={false}
+          page={2}
+          totalPages={3}
+        />,
+      );
+
+      expect(screen.getByRole("link", { name: "1" })).toHaveAttribute("href", "/saved?page=1");
+      const current = screen.getByRole("link", { name: "2" });
+      expect(current).toHaveAttribute("href", "/saved?page=2");
+      expect(current).toHaveAttribute("aria-current", "page");
+      expect(screen.getByRole("link", { name: "3" })).toHaveAttribute("href", "/saved?page=3");
+    });
+
+    it("disables Previous on the first page and Next on the last page", () => {
+      const { rerender } = render(
+        <SavedQrList
+          initialItems={[makeQrCode({ id: "qr_1", name: "First" })]}
+          isEmpty={false}
+          page={1}
+          totalPages={2}
+        />,
+      );
+
+      expect(screen.getByRole("link", { name: /go to previous page/i })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+      expect(screen.getByRole("link", { name: /go to next page/i })).not.toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+
+      rerender(
+        <SavedQrList
+          initialItems={[makeQrCode({ id: "qr_1", name: "First" })]}
+          isEmpty={false}
+          page={2}
+          totalPages={2}
+        />,
+      );
+
+      expect(screen.getByRole("link", { name: /go to next page/i })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+    });
   });
 });

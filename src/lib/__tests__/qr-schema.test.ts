@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildQrValue, defaultQrFieldValues, type QrFieldValues } from "@/lib/qr-schema";
+import { buildQrValue, defaultQrFieldValues, parseQrValue, type QrFieldValues } from "@/lib/qr-schema";
 
 function fields(overrides: Partial<QrFieldValues>): QrFieldValues {
   return { ...defaultQrFieldValues, ...overrides };
@@ -212,5 +212,125 @@ describe("buildQrValue", () => {
         "https://paypal.me/janedoe/10.00",
       );
     });
+  });
+});
+
+describe("parseQrValue", () => {
+  it("round-trips URL and TEXT", () => {
+    expect(parseQrValue("URL", "https://claude.ai").url).toBe("https://claude.ai");
+    expect(parseQrValue("TEXT", "hello world").text).toBe("hello world");
+  });
+
+  it("round-trips EMAIL with subject and body", () => {
+    const data = buildQrValue(
+      "EMAIL",
+      fields({ emailTo: "a@b.com", emailSubject: "Hi there", emailBody: "How are you?" }),
+    );
+    const parsed = parseQrValue("EMAIL", data);
+    expect(parsed.emailTo).toBe("a@b.com");
+    expect(parsed.emailSubject).toBe("Hi there");
+    expect(parsed.emailBody).toBe("How are you?");
+  });
+
+  it("round-trips WIFI", () => {
+    const data = buildQrValue(
+      "WIFI",
+      fields({ wifiSsid: "MyNet", wifiPassword: "secret", wifiEncryption: "WPA", wifiHidden: true }),
+    );
+    const parsed = parseQrValue("WIFI", data);
+    expect(parsed.wifiSsid).toBe("MyNet");
+    expect(parsed.wifiPassword).toBe("secret");
+    expect(parsed.wifiEncryption).toBe("WPA");
+    expect(parsed.wifiHidden).toBe(true);
+  });
+
+  it("round-trips VCARD", () => {
+    const data = buildQrValue(
+      "VCARD",
+      fields({
+        vcardFirstName: "Jane",
+        vcardLastName: "Doe",
+        vcardPhone: "+1 555 0000",
+        vcardEmail: "jane@doe.com",
+        vcardOrg: "Acme",
+        vcardTitle: "Engineer",
+        vcardWebsite: "https://jane.dev",
+      }),
+    );
+    const parsed = parseQrValue("VCARD", data);
+    expect(parsed.vcardFirstName).toBe("Jane");
+    expect(parsed.vcardLastName).toBe("Doe");
+    expect(parsed.vcardPhone).toBe("+1 555 0000");
+    expect(parsed.vcardEmail).toBe("jane@doe.com");
+    expect(parsed.vcardOrg).toBe("Acme");
+    expect(parsed.vcardTitle).toBe("Engineer");
+    expect(parsed.vcardWebsite).toBe("https://jane.dev");
+  });
+
+  it("round-trips SMS", () => {
+    const data = buildQrValue("SMS", fields({ smsPhone: "+1555", smsMessage: "hi" }));
+    const parsed = parseQrValue("SMS", data);
+    expect(parsed.smsPhone).toBe("+1555");
+    expect(parsed.smsMessage).toBe("hi");
+  });
+
+  it("round-trips PHONE", () => {
+    expect(parseQrValue("PHONE", "tel:+1 555 0000").phone).toBe("+1 555 0000");
+  });
+
+  it("round-trips LOCATION", () => {
+    const parsed = parseQrValue("LOCATION", "geo:37.7,-122.4");
+    expect(parsed.lat).toBe("37.7");
+    expect(parsed.lng).toBe("-122.4");
+  });
+
+  it("round-trips BITCOIN", () => {
+    const data = buildQrValue(
+      "BITCOIN",
+      fields({ bitcoinAddress: "1Abc", bitcoinAmount: "0.5", bitcoinLabel: "Coffee & tea" }),
+    );
+    const parsed = parseQrValue("BITCOIN", data);
+    expect(parsed.bitcoinAddress).toBe("1Abc");
+    expect(parsed.bitcoinAmount).toBe("0.5");
+    expect(parsed.bitcoinLabel).toBe("Coffee & tea");
+  });
+
+  it("round-trips WHATSAPP", () => {
+    const data = buildQrValue(
+      "WHATSAPP",
+      fields({ whatsappPhone: "15551234567", whatsappMessage: "hi there" }),
+    );
+    const parsed = parseQrValue("WHATSAPP", data);
+    expect(parsed.whatsappPhone).toBe("15551234567");
+    expect(parsed.whatsappMessage).toBe("hi there");
+  });
+
+  it("round-trips EVENT", () => {
+    const data = buildQrValue(
+      "EVENT",
+      fields({
+        eventTitle: "Team meeting",
+        eventStart: "2026-06-01T10:00",
+        eventEnd: "2026-06-01T11:00",
+        eventLocation: "Room 1",
+      }),
+    );
+    const parsed = parseQrValue("EVENT", data);
+    expect(parsed.eventTitle).toBe("Team meeting");
+    expect(parsed.eventStart).toBe("2026-06-01T10:00");
+    expect(parsed.eventEnd).toBe("2026-06-01T11:00");
+    expect(parsed.eventLocation).toBe("Room 1");
+  });
+
+  it("round-trips PAYPAL", () => {
+    const data = buildQrValue("PAYPAL", fields({ paypalUsername: "janedoe", paypalAmount: "10.00" }));
+    const parsed = parseQrValue("PAYPAL", data);
+    expect(parsed.paypalUsername).toBe("janedoe");
+    expect(parsed.paypalAmount).toBe("10.00");
+  });
+
+  it("leaves fields blank when the data does not match the expected shape", () => {
+    const parsed = parseQrValue("WIFI", "not a wifi string");
+    expect(parsed.wifiSsid).toBe("");
   });
 });

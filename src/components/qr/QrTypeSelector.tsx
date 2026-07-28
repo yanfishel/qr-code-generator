@@ -33,6 +33,11 @@ const TYPES: { id: QrType; icon: React.ElementType }[] = [
   { id: "BITCOIN", icon: Bitcoin },
 ];
 
+export const qrTypeIcons: Record<QrType, React.ElementType> = TYPES.reduce(
+  (acc, { id, icon }) => ({ ...acc, [id]: icon }),
+  {} as Record<QrType, React.ElementType>,
+);
+
 type QrTypeSelectorProps = {
   value: QrType;
   onChange: (type: QrType) => void;
