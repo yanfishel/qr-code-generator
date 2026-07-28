@@ -50,18 +50,20 @@ export default function RootLayout({
                 <span className="hidden font-display text-[1rem] font-semibold tracking-tight sm:inline">QR FRAME</span>
               </Link>
               <div className="flex items-center gap-7 justify-self-center">
-                <Link
-                  href="/"
-                  className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
-                >
-                  Generator
-                </Link>
-                <Link
-                  href="/saved"
-                  className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
-                >
-                  Saved
-                </Link>
+                <Show when="signed-in">
+                  <Link
+                    href="/"
+                    className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
+                  >
+                    Generator
+                  </Link>
+                  <Link
+                    href="/saved"
+                    className="font-mono text-xs tracking-wide text-muted-foreground uppercase hover:text-foreground"
+                  >
+                    Saved
+                  </Link>
+                </Show>
               </div>
               <div className="flex items-center gap-3 justify-self-end">
                 <Show when="signed-out">
