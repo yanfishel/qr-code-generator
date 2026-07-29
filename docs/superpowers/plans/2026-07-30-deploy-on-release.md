@@ -259,6 +259,73 @@ git commit -m "Pin GitHub Actions to commit SHAs in deploy workflow"
 
 ---
 
+### Task 4: Post-incident fixes (Node/pnpm mismatch, missing bootstrap clone)
+
+Added after this plan's original three tasks were merged and a real release
+was published against production. Two separate failures surfaced, in order:
+
+**4a. Node/pnpm version mismatch.** The final-review fix wave (see Task 3's
+surrounding history) bumped `pnpm/action-setup`'s `version:` from `9` to
+`11.17.0` to match the rest of the project's toolchain, but didn't bump
+`actions/setup-node`'s `node-version:` to match. pnpm 11.17.0 uses the
+built-in `node:sqlite` module at runtime, which requires Node >= 22.13;
+under Node 20 the gate crashed with `Error [ERR_UNKNOWN_BUILTIN_MODULE]:
+No such built-in module: node:sqlite`. Fixed by changing `node-version:
+"20"` to `node-version: "22"` in `.github/workflows/deploy.yml`'s `Setup
+Node` step, matching `claude.yml`'s already-working Node 22 / pnpm 11.17.0
+pairing. (This plan's Global Constraints section above has been updated in
+place to reflect the corrected values, rather than adding a redundant
+statement here.)
+
+**4b. Missing bootstrap clone.** Once the Node/pnpm fix let the gate and
+the SSH step actually run, the very first real deploy failed with `fatal:
+not a git repository (or any of the parent directories): .git`. The
+deploy script assumed `$SSH_DIR` was already an existing git working copy
+(per the spec's description of that secret: "path to the app's working
+copy on the server") — nobody had cloned the repo there yet, since this was
+the first deploy ever. Fixed by making the script self-bootstrapping:
+
+```yaml
+          envs: RELEASE_TAG,SSH_DIR,REPO_URL
+          command_timeout: 30m
+          script: |
+            set -e
+            if [ ! -d "$SSH_DIR/.git" ]; then
+              git clone "$REPO_URL" "$SSH_DIR"
+            fi
+            cd "$SSH_DIR"
+            git fetch --tags --force
+            git checkout -f "$RELEASE_TAG"
+            git reset --hard "$RELEASE_TAG"
+            corepack enable
+            pnpm install --frozen-lockfile
+            npx prisma generate
+            npx prisma migrate deploy
+            pnpm build
+            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start pnpm --name qrframe -- start
+            pm2 save
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SSH_DIR: ${{ secrets.SSH_DIR }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+```
+
+`REPO_URL` is derived from `github.repository` (owner/repo) rather than
+hardcoded, so it stays correct if the repo is ever renamed or transferred.
+This relies on the repo being public (an anonymous HTTPS clone) — if it
+were ever made private, the server would need its own GitHub credentials
+(a deploy key or PAT) to clone, which is out of scope here since the repo
+is public today. This only bootstraps a missing directory; it does not
+handle a `$SSH_DIR` that exists, is non-empty, but isn't a git repo (e.g.
+leftover files from a different setup) — `git clone` would fail into that,
+same as it would for a human running the same command by hand.
+
+- [ ] **Step 1: Apply both fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's bootstrap-clone block, `REPO_URL` in both `envs:` and `env:`).
+- [ ] **Step 2: Validate**: `pnpm dlx js-yaml .github/workflows/deploy.yml` parses cleanly; `bash -n` on the script (extracted the same way as prior tasks) passes.
+- [ ] **Step 3: Commit and open a PR against `main`** (the original three tasks are already merged, so this lands as a follow-up branch/PR rather than a continuation of the original `ci/deploy-on-release` branch).
+
+---
+
 ## Manual verification (not automatable in this environment)
 
 This plan has no live server or GitHub release event to test against locally, so the final confidence check happens after merging: publish a real GitHub release once this branch is merged, watch the Actions run, and confirm:
