@@ -17,7 +17,7 @@
 - The server-side script must be exactly the one in the spec (see Task 2), using `RELEASE_TAG` sourced from `github.event.release.tag_name`.
 - PM2 process name is `qrframe`.
 - Out of scope: rollback automation, deploy notifications, PM2 boot/startup persistence beyond `pm2 save`, creating the secrets themselves.
-- Node version: 20 (matches README's "Node.js 20+" prerequisite). pnpm major version: 9 (matches `pnpm-lock.yaml`'s `lockfileVersion: '9.0'`).
+- Node version: 22, pnpm version: 11.17.0 (matches `claude.yml`'s toolchain — pnpm 11.17.0 requires Node >= 22.13 at runtime, since it uses the built-in `node:sqlite` module; running it under Node 20 crashes with `ERR_UNKNOWN_BUILTIN_MODULE`). Task 1's original code block below and its original "Node 20 / pnpm 9" values were superseded first by the final-review fix wave (pnpm bumped to 11.17.0 to match the rest of the project) and then by a post-merge production incident (Node bumped to 22 — the two must move together, since that's exactly the version pnpm 11.17.0 requires).
 
 ---
 
