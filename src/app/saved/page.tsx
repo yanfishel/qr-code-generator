@@ -1,9 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { listQrCodes } from "@/actions/qr-actions";
 import { SavedQrList } from "@/components/qr/SavedQrList";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Saved QR Codes",
+  robots: { index: false, follow: false },
+};
 
 const PAGE_SIZE = 10;
 

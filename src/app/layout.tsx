@@ -1,6 +1,6 @@
 import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { Space_Grotesk, Work_Sans, IBM_Plex_Mono } from "next/font/google";
@@ -28,8 +28,48 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://qrframe.pro"),
-  title: "QRFrame",
-  description: "Generate and save customizable QR codes",
+  title: {
+    default: "QRFrame — Custom QR Code Generator",
+    template: "%s · QRFrame",
+  },
+  description:
+    "Create custom QR codes for URLs, Wi-Fi, contact cards, payments, and more. Choose colors, dot styles, and logos, then download as PNG or SVG — free, no signup required to generate.",
+  keywords: [
+    "QR code generator",
+    "custom QR code",
+    "free QR code",
+    "QR code with logo",
+    "Wi-Fi QR code",
+    "vCard QR code",
+    "SVG QR code",
+  ],
+  applicationName: "QRFrame",
+  authors: [{ name: "QRFrame" }],
+  formatDetection: { telephone: false },
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: "https://qrframe.pro",
+    siteName: "QRFrame",
+    title: "QRFrame — Custom QR Code Generator",
+    description:
+      "Create custom QR codes for URLs, Wi-Fi, contact cards, payments, and more. Choose colors, dot styles, and logos, then download as PNG or SVG.",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QRFrame — Custom QR Code Generator",
+    description:
+      "Create custom QR codes for URLs, Wi-Fi, contact cards, payments, and more. Free, no signup required to generate.",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F8F5" },
+    { media: "(prefers-color-scheme: dark)", color: "#101412" },
+  ],
 };
 
 export default function RootLayout({
