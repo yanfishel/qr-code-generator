@@ -1,0 +1,271 @@
+# Deploy on Release Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Add a GitHub Actions workflow that, on every published GitHub release, validates the code and then deploys it to the dedicated production server over SSH.
+
+**Architecture:** A single workflow file (`.github/workflows/deploy.yml`) with one job (`deploy`) triggered by `release: types: [published]`. The job runs two stages in sequence: a runner-side validation gate (checkout, install, lint, test) and then an SSH step (`appleboy/ssh-action`) that logs into the server, checks out the released tag, rebuilds, runs migrations, and reloads the PM2 process.
+
+**Tech Stack:** GitHub Actions, `actions/checkout@v4`, `pnpm/action-setup@v4`, `actions/setup-node@v4`, `appleboy/ssh-action@v1`, pnpm, Prisma 6, PM2 (on the server).
+
+## Global Constraints
+
+- Spec: `docs/superpowers/specs/2026-07-30-deploy-on-release-design.md`
+- Trigger: `release: types: [published]` only (fires for releases and pre-releases, not drafts) — no `workflow_dispatch`, no branch/push triggers.
+- Runner-side gate (`pnpm install`, `pnpm lint`, `pnpm test`) must fail the job before the SSH step runs if lint or tests fail. The runner never runs `pnpm build`.
+- Secrets already exist in the repo and must be referenced exactly as: `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `SSH_DIR`. Do not create or rename secrets.
+- The server-side script must be exactly the one in the spec (see Task 2), using `RELEASE_TAG` sourced from `github.event.release.tag_name`.
+- PM2 process name is `qrframe`.
+- Out of scope: rollback automation, deploy notifications, PM2 boot/startup persistence beyond `pm2 save`, creating the secrets themselves.
+- Node version: 20 (matches README's "Node.js 20+" prerequisite). pnpm major version: 9 (matches `pnpm-lock.yaml`'s `lockfileVersion: '9.0'`).
+
+---
+
+## File Structure
+
+- Create: `.github/workflows/deploy.yml` — the only file this plan touches. One job, built up across the two tasks below: Task 1 adds the trigger and the validation gate steps; Task 2 appends the SSH deploy step.
+
+---
+
+### Task 1: Validation gate
+
+**Files:**
+- Create: `.github/workflows/deploy.yml`
+
+**Interfaces:**
+- Produces: a `deploy` job in `.github/workflows/deploy.yml` with steps `Checkout`, `Setup pnpm`, `Setup Node`, `Install dependencies`, `Lint`, `Test`, running on `ubuntu-latest`, triggered by `release: types: [published]`. Task 2 appends one more step to this same job after `Test`.
+
+- [ ] **Step 1: Write the workflow file with the trigger and validation gate**
+
+Create `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy on release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+```
+
+- [ ] **Step 2: Validate the YAML parses correctly**
+
+Run: `npx -y js-yaml .github/workflows/deploy.yml`
+
+Expected: prints the parsed structure (a JS object dump starting with `{ name: 'Deploy on release', ... }`) and exits 0 — no YAML syntax error.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add .github/workflows/deploy.yml
+git commit -m "Add validation gate for deploy-on-release workflow"
+```
+
+---
+
+### Task 2: SSH deploy step
+
+**Files:**
+- Modify: `.github/workflows/deploy.yml` (append one step after `Test`)
+
+**Interfaces:**
+- Consumes: the `deploy` job produced in Task 1 — appends its step directly after the `Test` step, inside the same job, same file.
+- Produces: the completed workflow — no further tasks depend on this one.
+
+- [ ] **Step 1: Append the SSH deploy step**
+
+Add this step at the end of the `steps:` list in `.github/workflows/deploy.yml` (after `Test`, keeping the same indentation level as the other steps):
+
+```yaml
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: RELEASE_TAG
+          script: |
+            set -e
+            cd "$SSH_DIR"
+            git fetch --tags --force
+            git checkout "$RELEASE_TAG"
+            git reset --hard "$RELEASE_TAG"
+            corepack enable
+            pnpm install --frozen-lockfile
+            npx prisma generate
+            npx prisma migrate deploy
+            pnpm build
+            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start pnpm --name qrframe -- start
+            pm2 save
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SSH_DIR: ${{ secrets.SSH_DIR }}
+```
+
+Note: `SSH_DIR` is passed as an `env` var (not `envs:`) at the step level so it's available inside the `script:` block via the shell's own environment — `appleboy/ssh-action` exports every `env:` entry on the step into the remote session automatically, same as `RELEASE_TAG` listed in `envs:`. Both `RELEASE_TAG` and `SSH_DIR` must end up set in the remote shell for `cd "$SSH_DIR"` and `git checkout "$RELEASE_TAG"` to work.
+
+- [ ] **Step 2: Syntax-check the embedded shell script in isolation**
+
+The script itself can't run yet (no live server in this environment), but its bash syntax can be checked without executing it. Extract the script block into a temp file and run `bash -n` (parse-only, no execution):
+
+```bash
+cat > /tmp/deploy-script-check.sh <<'EOF'
+set -e
+cd "$SSH_DIR"
+git fetch --tags --force
+git checkout "$RELEASE_TAG"
+git reset --hard "$RELEASE_TAG"
+corepack enable
+pnpm install --frozen-lockfile
+npx prisma generate
+npx prisma migrate deploy
+pnpm build
+pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start pnpm --name qrframe -- start
+pm2 save
+EOF
+bash -n /tmp/deploy-script-check.sh
+```
+
+Expected: no output, exit code 0 (confirms no bash syntax errors — unbalanced quotes, bad redirects, etc.).
+
+- [ ] **Step 3: Validate the full YAML still parses**
+
+Run: `npx -y js-yaml .github/workflows/deploy.yml`
+
+Expected: prints the parsed structure including the new `Deploy to server` step, exits 0.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add .github/workflows/deploy.yml
+git commit -m "Add SSH deploy step to deploy-on-release workflow"
+```
+
+---
+
+### Task 3: Pin actions to commit SHAs
+
+Added after the initial two tasks: an automated security review flagged that
+`.github/workflows/deploy.yml` references third-party actions by mutable
+version tag (`@v4`, `@v1`) rather than an immutable commit SHA. This matters
+most for `appleboy/ssh-action`, which receives the `SSH_KEY` secret — if the
+`v1` tag were ever repointed upstream (compromised maintainer account, e.g.),
+the workflow would silently pull the new code on the next run. The user
+explicitly asked to pin all four actions in this file to SHAs, overriding the
+original design's choice to match the repo's existing tag-based convention
+(see the design spec's "Out of scope" section, which this supersedes for
+this file only — `claude.yml`/`claude-code-review.yml` are unaffected).
+
+**Files:**
+- Modify: `.github/workflows/deploy.yml`
+
+**Interfaces:**
+- Consumes: the completed workflow from Tasks 1-2 (six gate steps + one SSH
+  deploy step, all present and passing review).
+- Produces: the same workflow with `uses:` lines pinned to SHAs. No task
+  depends on this one.
+
+Exact SHAs to use, resolved from each action's current major-version tag
+(fetched via `gh api repos/<owner>/<repo>/commits/<tag>`, checked against
+each SHA's own tags to confirm the version comment):
+
+| Action | Tag | Resolved SHA | Version comment |
+|---|---|---|---|
+| `actions/checkout` | `v4` | `11d5960a326750d5838078e36cf38b85af677262` | `v4.4.0` |
+| `pnpm/action-setup` | `v4` | `b906affcce14559ad1aafd4ab0e942779e9f58b1` | `v4.3.0` |
+| `actions/setup-node` | `v4` | `49933ea5288caeca8642d1e84afbd3f7d6820020` | `v4.4.0` |
+| `appleboy/ssh-action` | `v1` | `0ff4204d59e8e51228ff73bce53f80d53301dee2` | `v1.2.5` |
+
+- [ ] **Step 1: Replace each `uses:` tag reference with its pinned SHA plus a version comment**
+
+In `.github/workflows/deploy.yml`, change each of these four lines (keep everything else on the line/step identical — same `with:`/`env:` blocks, same indentation):
+
+```yaml
+        uses: actions/checkout@v4
+```
+becomes
+```yaml
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+```
+
+```yaml
+        uses: pnpm/action-setup@v4
+```
+becomes
+```yaml
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+```
+
+```yaml
+        uses: actions/setup-node@v4
+```
+becomes
+```yaml
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+```
+
+```yaml
+        uses: appleboy/ssh-action@v1
+```
+becomes
+```yaml
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+```
+
+- [ ] **Step 2: Validate the full YAML still parses**
+
+Run: `npx -y js-yaml .github/workflows/deploy.yml`
+
+Expected: prints the parsed structure with all four `uses:` values now showing the pinned SHAs, exits 0.
+
+- [ ] **Step 3: Confirm no tag references remain**
+
+Run: `grep -n "uses:.*@v[0-9]" .github/workflows/deploy.yml`
+
+Expected: no output (empty match) — every `uses:` line now references a 40-character SHA, not a short version tag.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add .github/workflows/deploy.yml
+git commit -m "Pin GitHub Actions to commit SHAs in deploy workflow"
+```
+
+---
+
+## Manual verification (not automatable in this environment)
+
+This plan has no live server or GitHub release event to test against locally, so the final confidence check happens after merging: publish a real GitHub release (or a test pre-release) once this branch is merged, watch the Actions run, and confirm:
+
+1. The gate steps (install/lint/test) run and pass.
+2. The SSH step connects and the server ends up on the new tag (`git log -1` on the server matches the release tag).
+3. `pm2 list` on the server shows `qrframe` as `online` with a recent restart time.
+4. The site serves the new release's changes.
+
+This isn't a plan task because it requires infrastructure (a real server, a real release) outside this repo checkout — call it out to the user after all tasks are merged.
