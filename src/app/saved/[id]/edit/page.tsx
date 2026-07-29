@@ -1,9 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getQrCode } from "@/actions/qr-actions";
 import { QrGeneratorForm } from "@/components/qr/QrGeneratorForm";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Edit QR Code",
+  robots: { index: false, follow: false },
+};
 
 type EditQrCodePageProps = {
   params: Promise<{ id: string }>;

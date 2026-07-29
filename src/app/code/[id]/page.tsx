@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicQrCode } from "@/actions/qr-actions";
 import { PublicQrView } from "@/components/qr/PublicQrView";
@@ -8,6 +9,22 @@ export const dynamic = "force-dynamic";
 type PublicQrCodePageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({ params }: PublicQrCodePageProps): Promise<Metadata> {
+  const { id } = await params;
+  const qrCode = await getPublicQrCode(id);
+  if (!qrCode) return {};
+
+  const title = qrCode.name || `${qrTypeLabels[qrCode.type]} QR Code`;
+  const description = `Scan or download this ${qrTypeLabels[qrCode.type]} QR code, made with QRFrame.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/code/${id}` },
+    openGraph: { title, description, url: `/code/${id}`, type: "website" },
+    twitter: { card: "summary", title, description },
+  };
+}
 
 export default async function PublicQrCodePage({ params }: PublicQrCodePageProps) {
   const { id } = await params;
