@@ -57,8 +57,8 @@ export function QrTypeSelector({ value, onChange }: QrTypeSelectorProps) {
             className={cn(
               "flex flex-col items-center gap-1.5 rounded-md border px-2 py-1.5 transition-colors",
               active
-                ? "border-primary bg-accent text-accent-foreground"
-                : "border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                ? "cursor-default border-primary bg-accent text-accent-foreground"
+                : "cursor-pointer border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
             )}
           >
             <Icon className="size-4" strokeWidth={1.5} />
