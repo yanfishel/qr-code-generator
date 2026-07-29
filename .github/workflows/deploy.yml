@@ -1,0 +1,63 @@
+name: Deploy on release
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: 11.17.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: RELEASE_TAG,SSH_DIR
+          command_timeout: 30m
+          script: |
+            set -e
+            cd "$SSH_DIR"
+            git fetch --tags --force
+            git checkout -f "$RELEASE_TAG"
+            git reset --hard "$RELEASE_TAG"
+            corepack enable
+            pnpm install --frozen-lockfile
+            npx prisma generate
+            npx prisma migrate deploy
+            pnpm build
+            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start pnpm --name qrframe -- start
+            pm2 save
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SSH_DIR: ${{ secrets.SSH_DIR }}
