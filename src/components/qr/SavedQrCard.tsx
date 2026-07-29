@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Trash2, Download, Pencil } from "lucide-react";
+import { Trash2, Download, Pencil, Share2 } from "lucide-react";
 import type { QrCode } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
@@ -111,6 +111,22 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="cursor-pointer"
+                aria-label="Share"
+                asChild
+              >
+                <Link href={`/code/${qrCode.id}`}>
+                  <Share2 />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Share</TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
