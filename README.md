@@ -6,7 +6,6 @@
 
 Pick a content type, style every pixel, download it as PNG or SVG — and save it for later once signed in.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0E9E92?style=flat-square)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
@@ -14,7 +13,7 @@ Pick a content type, style every pixel, download it as PNG or SVG — and save i
 [![Clerk](https://img.shields.io/badge/Auth-Clerk-6C47FF?style=flat-square&logo=clerk&logoColor=white)](https://clerk.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-managed-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/yanfishel/qr-code-generator/pulls)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0E9E92?style=flat-square)](./LICENSE)
 
 </div>
 
