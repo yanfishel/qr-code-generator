@@ -253,8 +253,8 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                   className={
                     "-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 font-mono text-xs tracking-wide uppercase transition-colors " +
                     (active
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground")
+                      ? "cursor-default border-primary text-primary"
+                      : "cursor-pointer border-transparent text-muted-foreground hover:text-foreground")
                   }
                 >
                   <Icon className="size-3.5" />

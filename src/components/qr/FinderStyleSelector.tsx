@@ -31,8 +31,8 @@ export function FinderStyleSelector({ value, onChange, filled = true }: FinderSt
             className={cn(
               "flex flex-col items-center gap-1.5 rounded-md border py-2 transition-colors",
               active
-                ? "border-primary bg-accent text-accent-foreground"
-                : "border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                ? "cursor-default border-primary bg-accent text-accent-foreground"
+                : "cursor-pointer border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
             )}
           >
             <span

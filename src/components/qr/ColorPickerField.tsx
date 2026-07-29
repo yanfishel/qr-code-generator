@@ -49,8 +49,8 @@ export function ColorPickerField({ value, onChange, id, allowTransparent }: Colo
           className={cn(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors",
             isTransparent
-              ? "border-primary bg-accent text-accent-foreground"
-              : "border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
+              ? "cursor-default border-primary bg-accent text-accent-foreground"
+              : "cursor-pointer border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
           )}
         >
           <SquareDashed className="size-4" />

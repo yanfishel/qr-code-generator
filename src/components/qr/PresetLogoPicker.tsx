@@ -21,8 +21,8 @@ export function PresetLogoPicker({ value, onChange }: PresetLogoPickerProps) {
         className={cn(
           "flex size-10 shrink-0 items-center justify-center rounded-full border text-muted-foreground transition-colors",
           !value
-            ? "border-primary ring-2 ring-primary/40"
-            : "border-border hover:border-primary/40 hover:text-foreground",
+            ? "cursor-default border-primary ring-2 ring-primary/40"
+            : "cursor-pointer border-border hover:border-primary/40 hover:text-foreground",
         )}
       >
         <Ban className="size-4" strokeWidth={1.5} />
@@ -39,8 +39,8 @@ export function PresetLogoPicker({ value, onChange }: PresetLogoPickerProps) {
             className={cn(
               "flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-[opacity,box-shadow]",
               active
-                ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                : "opacity-80 hover:opacity-100",
+                ? "cursor-default ring-2 ring-primary ring-offset-2 ring-offset-background"
+                : "cursor-pointer opacity-80 hover:opacity-100",
             )}
           >
             <Icon className="size-4" strokeWidth={2} />
