@@ -335,7 +335,28 @@ stray files from a previous manual setup) are left alone forever — `checkout
 never runs a destructive `git clean`, since that would also delete the
 untracked `.env` this project's design depends on surviving every deploy.
 
-- [ ] **Step 1: Apply both fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block, `REPO_URL` in both `envs:` and `env:`).
+**4c. `corepack: command not found` on the server.** The very next deploy
+attempt (after 4b's fix) got past the git bootstrap and failed on the next
+line: `bash: line 14: corepack: command not found`. The server's own Node
+installation doesn't ship `corepack` (common on shared-hosting "Node.js
+selector" setups, and Corepack has also been made opt-in / unbundled in
+newer Node releases) — the script had assumed it, same as the standard
+`corepack enable` idiom used in Task 2's original spec. Fixed by making that
+line resilient to either case: use `corepack` if it's on `PATH`, otherwise
+fall back to installing the exact pinned pnpm version via `npm` directly
+(which ships with every Node install, unlike `corepack`):
+
+```yaml
+            command -v corepack >/dev/null 2>&1 && corepack enable || npm install -g pnpm@11.17.0
+            pnpm install --frozen-lockfile
+```
+
+The version (`11.17.0`) is hardcoded here to match the gate's
+`pnpm/action-setup` version (see 4a) — if that version is ever bumped again,
+this line needs a matching update, since there's no `packageManager` field
+in `package.json` for either path to read from automatically.
+
+- [ ] **Step 1: Apply all three fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block with `REPO_URL` in both `envs:` and `env:`, 4c's `corepack`-or-`npm` fallback line).
 - [ ] **Step 2: Validate**: `pnpm dlx js-yaml .github/workflows/deploy.yml` parses cleanly; `bash -n` on the script (extracted the same way as prior tasks) passes.
 - [ ] **Step 3: Commit and open a PR against `main`** (the original three tasks are already merged, so this lands as a follow-up branch/PR rather than a continuation of the original `ci/deploy-on-release` branch).
 
