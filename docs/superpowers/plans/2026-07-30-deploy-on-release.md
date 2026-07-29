@@ -428,6 +428,47 @@ this.
 - [ ] **Step 2: Validate**: `pnpm dlx js-yaml .github/workflows/deploy.yml` parses cleanly; `bash -n` on the script (extracted the same way as prior tasks) passes.
 - [ ] **Step 3: Commit and open a PR against `main`** (the original three tasks are already merged, so this lands as a follow-up branch/PR rather than a continuation of the original `ci/deploy-on-release` branch).
 
+**4f. Port collision with another app on the same server.** After deploy
+succeeded end-to-end for the first time (git bootstrap, build, `pm2`
+reload all worked), the site at the production domain showed a *different*
+site hosted on the same server. `pm2 list` on the server showed two
+processes: a pre-existing `npm` process (the other site) and `qrframe`
+with 93 restarts — `pm2 logs qrframe` showed why:
+```
+Error: listen EADDRINUSE: address already in use :::3000
+```
+Both apps default to Next.js's port 3000 (`next start`'s default when
+no `-p`/`PORT` is given), and the pre-existing site's process had already
+claimed it — `qrframe` was crash-looping on every PM2 restart attempt, and
+the reverse proxy (configured separately at the web-server/control-panel
+level, out of scope for this repo — see the "Manual verification" section
+below) was forwarding the domain's traffic to whichever process actually
+held port 3000, i.e. the other site. Fixed by giving `qrframe` its own
+port via the `PORT` environment variable, which `next start` honors as a
+fallback when no `-p` flag is passed:
+
+```yaml
+          envs: RELEASE_TAG,SSH_DIR,REPO_URL,PORT
+          command_timeout: 30m
+          script: |
+            ...
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SSH_DIR: ${{ secrets.SSH_DIR }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          PORT: 3001
+```
+
+No change to the script body itself was needed: `pm2 restart qrframe
+--update-env` (already in the script, used on every deploy after the
+first) re-reads the environment `appleboy/ssh-action` set up for the
+script's shell — including `PORT` — and applies it to the already-existing
+PM2 process definition. The reverse proxy on the server (whatever web
+server/control panel fronts the domain) must point at the *same* port
+(`3001`) for this to actually resolve the domain to the right app — that
+side of the config is entirely outside this repo/workflow and was updated
+by hand on the server, not by this change.
+
 ---
 
 ## Manual verification (not automatable in this environment)
@@ -437,8 +478,9 @@ This plan has no live server or GitHub release event to test against locally, so
 1. Before the first real deploy, confirm the toolchain is actually reachable from a non-interactive shell — `appleboy/ssh-action` runs a non-login, non-interactive remote shell, where `~/.bashrc` often early-returns before setting up nvm-managed tools, so `node`/`corepack`/`pnpm`/`pm2` can be missing from `PATH` there even though they work fine over an interactive SSH session: `ssh <user>@<host> 'node -v; corepack --version; pnpm -v; pm2 -v'`.
 2. The gate steps (install/lint/test) run and pass.
 3. The SSH step connects and the server ends up on the new tag (`git log -1` on the server matches the release tag).
-4. `pm2 list` on the server shows `qrframe` as `online` with a recent restart time.
+4. `pm2 list` on the server shows `qrframe` as `online` with a recent restart time (and a low/stable restart count — a climbing count on every check means it's crash-looping, as it did in 4f's port collision).
 5. The site serves the new release's changes.
+6. The web server / control panel fronting the domain (Apache, Nginx, or whatever the host provides — entirely outside this repo, configured by hand on the server) reverse-proxies to `127.0.0.1:$PORT` (`3001`, per 4f) rather than trying to serve `$SSH_DIR` as static files, and that port isn't already claimed by another app on the same server (check `pm2 list` for other processes before picking a port for a new deploy target).
 
 Note: the `release: types: [published]` trigger fires for pre-releases too, so publishing a pre-release to "test" this is not a dry run — it triggers the same real deploy against production as a full release.
 

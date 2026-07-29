@@ -43,7 +43,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: RELEASE_TAG,SSH_DIR,REPO_URL
+          envs: RELEASE_TAG,SSH_DIR,REPO_URL,PORT
           command_timeout: 30m
           script: |
             set -e
@@ -66,3 +66,4 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           SSH_DIR: ${{ secrets.SSH_DIR }}
           REPO_URL: https://github.com/${{ github.repository }}.git
+          PORT: 3001
