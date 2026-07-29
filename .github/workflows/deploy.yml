@@ -56,17 +56,11 @@ jobs:
             git fetch --tags --force
             git checkout -f "$RELEASE_TAG"
             git reset --hard "$RELEASE_TAG"
-            if command -v corepack >/dev/null 2>&1; then
-              corepack enable
-            elif ! command -v pnpm >/dev/null 2>&1; then
-              npm install -g pnpm@11.17.0 --prefix "$HOME/.local"
-            fi
-            export PATH="$HOME/.local/bin:$PATH"
-            pnpm install --frozen-lockfile
+            npx --yes pnpm@11.17.0 install --frozen-lockfile
             npx prisma generate
             npx prisma migrate deploy
-            pnpm build
-            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start pnpm --name qrframe -- start
+            npx --yes pnpm@11.17.0 build
+            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start npx --name qrframe -- --yes pnpm@11.17.0 start
             pm2 save
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}

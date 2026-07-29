@@ -391,7 +391,40 @@ absolute path for `pnpm` at that point (which PM2 does, since the process
 list is dumped via `pm2 save` for `pm2 resurrect`/reboot) — later PM2
 restarts don't need `$HOME/.local/bin` back on `PATH` on their own.
 
-- [ ] **Step 1: Apply all four fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block with `REPO_URL` in both `envs:` and `env:`, 4c/4d's `corepack`-or-user-prefixed-`npm` block with the `PATH` export).
+**4e. Superseded before ever being deployed: dropped `npm install`
+entirely, in favor of `npx`.** 4d's user-prefixed install was committed but
+never actually re-tested against the server — reviewing it, the user
+rejected the whole direction ("you're again trying to install pnpm
+globally"): even a user-prefixed `npm install -g` is still fundamentally
+"provision a standing pnpm install somewhere and hope the location is
+writable and stays on `PATH`," which is exactly the class of problem that
+produced 4c's and 4d's failures in the first place. Replaced entirely with
+invoking pnpm through `npx`, which ships with every Node/npm install
+(unlike `pnpm` itself) and caches downloaded packages under the invoking
+user's own home directory (`~/.npm/_npx`) regardless of whether Node itself
+is a system-wide or user-owned install — there is no install step, no
+prefix to choose, and no `PATH` export needed:
+
+```yaml
+            npx --yes pnpm@11.17.0 install --frozen-lockfile
+            npx prisma generate
+            npx prisma migrate deploy
+            npx --yes pnpm@11.17.0 build
+            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start npx --name qrframe -- --yes pnpm@11.17.0 start
+            pm2 save
+```
+
+The PM2-managed process itself now runs `npx --yes pnpm@11.17.0 start`
+rather than a bare `pnpm start`, so it never depends on `pnpm` being
+resolvable as a standalone command at all — on the server, at PM2's next
+resurrect/reboot, or anywhere else. The pinned version (`11.17.0`) still has
+to be kept in sync by hand with the gate's `pnpm/action-setup` version (same
+caveat as 4c/4d), now in three places instead of one — the tradeoff accepted
+for never touching a system/global install location again. 4c's and 4d's
+`corepack`/`npm install -g` blocks are fully removed, not layered underneath
+this.
+
+- [ ] **Step 1: Apply the final `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block with `REPO_URL` in both `envs:` and `env:`, 4e's all-`npx` invocation replacing 4c/4d entirely).
 - [ ] **Step 2: Validate**: `pnpm dlx js-yaml .github/workflows/deploy.yml` parses cleanly; `bash -n` on the script (extracted the same way as prior tasks) passes.
 - [ ] **Step 3: Commit and open a PR against `main`** (the original three tasks are already merged, so this lands as a follow-up branch/PR rather than a continuation of the original `ci/deploy-on-release` branch).
 
