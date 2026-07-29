@@ -56,7 +56,12 @@ jobs:
             git fetch --tags --force
             git checkout -f "$RELEASE_TAG"
             git reset --hard "$RELEASE_TAG"
-            command -v corepack >/dev/null 2>&1 && corepack enable || npm install -g pnpm@11.17.0
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable
+            elif ! command -v pnpm >/dev/null 2>&1; then
+              npm install -g pnpm@11.17.0 --prefix "$HOME/.local"
+            fi
+            export PATH="$HOME/.local/bin:$PATH"
             pnpm install --frozen-lockfile
             npx prisma generate
             npx prisma migrate deploy

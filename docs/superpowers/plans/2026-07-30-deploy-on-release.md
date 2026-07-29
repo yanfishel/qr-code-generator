@@ -356,7 +356,42 @@ The version (`11.17.0`) is hardcoded here to match the gate's
 this line needs a matching update, since there's no `packageManager` field
 in `package.json` for either path to read from automatically.
 
-- [ ] **Step 1: Apply all three fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block with `REPO_URL` in both `envs:` and `env:`, 4c's `corepack`-or-`npm` fallback line).
+**4d. `npm install -g` failed with `EACCES` on the server.** 4c's fallback
+line ran (`corepack` was indeed absent — confirmed via `ssh <user>@<host>
+'node -v; corepack --version; pnpm -v; pm2 -v'`, which also showed Node
+v25.8.2 and `pm2` 6.0.14 already present), but `npm install -g
+pnpm@11.17.0` itself failed:
+```
+npm error code EACCES
+npm error path /usr/lib/node_modules/pnpm
+```
+The server's Node is a system-wide install (package-manager-provisioned,
+Node under `/usr/lib/node_modules`), not a user-owned one (e.g. nvm), so the
+deploy's SSH user has no write access to npm's default global-install
+location. Fixed by installing pnpm to a directory inside the deploy user's
+own home directory instead, via npm's `--prefix` flag, and adding that
+directory to `PATH` for the rest of the script (which also covers the later
+`pm2 start pnpm ...` line, since it runs in the same shell):
+
+```yaml
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable
+            elif ! command -v pnpm >/dev/null 2>&1; then
+              npm install -g pnpm@11.17.0 --prefix "$HOME/.local"
+            fi
+            export PATH="$HOME/.local/bin:$PATH"
+            pnpm install --frozen-lockfile
+```
+
+`export PATH=...` runs unconditionally (not only inside the `elif` branch)
+so that a pnpm installed by a *previous* deploy run is still found even on
+runs where the `elif` doesn't re-install it (`command -v pnpm` already
+succeeds by then). This assumes `pm2 start pnpm ...` resolves and stores an
+absolute path for `pnpm` at that point (which PM2 does, since the process
+list is dumped via `pm2 save` for `pm2 resurrect`/reboot) — later PM2
+restarts don't need `$HOME/.local/bin` back on `PATH` on their own.
+
+- [ ] **Step 1: Apply all four fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block with `REPO_URL` in both `envs:` and `env:`, 4c/4d's `corepack`-or-user-prefixed-`npm` block with the `PATH` export).
 - [ ] **Step 2: Validate**: `pnpm dlx js-yaml .github/workflows/deploy.yml` parses cleanly; `bash -n` on the script (extracted the same way as prior tasks) passes.
 - [ ] **Step 3: Commit and open a PR against `main`** (the original three tasks are already merged, so this lands as a follow-up branch/PR rather than a continuation of the original `ci/deploy-on-release` branch).
 
