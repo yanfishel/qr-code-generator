@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { Download } from "lucide-react";
-import type { QrCode } from "@prisma/client";
+import type { PublicQrCode } from "@/actions/qr-actions";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { QrSvg } from "@/components/qr/QrSvg";
 import { useQrDownload } from "@/hooks/use-qr-download";
 
 type PublicQrViewProps = {
-  qrCode: QrCode;
+  qrCode: PublicQrCode;
 };
 
 export function PublicQrView({ qrCode }: PublicQrViewProps) {
@@ -46,7 +46,7 @@ export function PublicQrView({ qrCode }: PublicQrViewProps) {
               finderFrameStyle={qrCode.finderFrameStyle}
               finderMarkerStyle={qrCode.finderMarkerStyle}
               imageSettings={imageSettings}
-              style={{ width: "100%", height: "auto" }}
+              style={{ width: `min(100%, ${qrCode.size}px)`, height: "auto" }}
             />
             <QrSvg
               ref={svgRef}
