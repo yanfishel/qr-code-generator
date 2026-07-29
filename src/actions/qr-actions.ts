@@ -37,6 +37,10 @@ export async function getQrCode(id: string) {
   return prisma.qrCode.findFirst({ where: { id, userId: user.id } });
 }
 
+export async function getPublicQrCode(id: string) {
+  return prisma.qrCode.findUnique({ where: { id } });
+}
+
 export async function updateQrCode(id: string, input: unknown) {
   const parsed = qrFormSchema.parse(input);
   const user = await getCurrentUser();
