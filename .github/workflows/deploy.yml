@@ -30,3 +30,27 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: RELEASE_TAG
+          script: |
+            set -e
+            cd "$SSH_DIR"
+            git fetch --tags --force
+            git checkout "$RELEASE_TAG"
+            git reset --hard "$RELEASE_TAG"
+            corepack enable
+            pnpm install --frozen-lockfile
+            npx prisma generate
+            npx prisma migrate deploy
+            pnpm build
+            pm2 describe qrframe > /dev/null 2>&1 && pm2 restart qrframe --update-env || pm2 start pnpm --name qrframe -- start
+            pm2 save
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SSH_DIR: ${{ secrets.SSH_DIR }}
