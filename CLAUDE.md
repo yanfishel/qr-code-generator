@@ -85,6 +85,10 @@ Vitest + React Testing Library (`vitest.config.ts`, `vitest.setup.ts`, jsdom env
 
 jsdom's `canvas.getContext("2d")` returns `null` (no `canvas` npm package installed), so `QrCanvas` can't be exercised directly — its draw effect just bails out early in tests. QR-rendering coverage instead lives in `src/lib/__tests__/qr-render.test.ts` (pure `buildQrLayout` geometry: module count, excavation, finder origins) and `QrSvg.test.tsx` (renders real markup in jsdom since SVG elements need no canvas backend) — `QrCanvas` and `QrSvg` share the same layout/geometry, so the SVG output stands in for both.
 
+## Deployment
+
+`.github/workflows/deploy.yml` triggers on `release: types: [published]` (fires for pre-releases too, not for drafts). The job runs a runner-side gate first (checkout, install, lint, test) — it never runs `pnpm build` — and only if that passes does it SSH into the production server (`appleboy/ssh-action`) to check out the release tag, run `prisma migrate deploy`, run `pnpm build`, and reload PM2. It depends on four secrets already provisioned in the repo (not created by this workflow): `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `SSH_DIR`. The PM2 process is named `qrframe`. The `uses:` lines in that file are intentionally pinned to commit SHAs, not version tags — `appleboy/ssh-action` handles the `SSH_KEY` secret, so "cleaning up" those pins back to `@v4`/`@v1` would silently reintroduce a supply-chain risk (a repointed tag would run different code with access to the private key on the next release).
+
 ## Conventions
 
 - shadcn/ui components live in `src/components/ui/` (Radix UI base, "nova" preset); app-specific components live in `src/components/qr/`.

@@ -76,6 +76,13 @@ pm2 save
 - No automatic rollback is implemented (out of scope); a failed deploy leaves
   the previous release running under PM2 untouched, and the fix is to publish
   a corrected release.
+- `npx prisma migrate deploy` runs before `pnpm build` in the script, so a
+  build failure after a successful migration can leave the database already
+  migrated to the new schema while the old code (still running under PM2) is
+  what's actually serving traffic. Migrations in this project should stay
+  additive/backward-compatible for this reason, so the previous release's
+  code keeps working against a newer schema until the build is fixed and
+  redeployed.
 
 ## Out of scope
 

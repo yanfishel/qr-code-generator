@@ -109,7 +109,7 @@ Add this step at the end of the `steps:` list in `.github/workflows/deploy.yml` 
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: RELEASE_TAG
+          envs: RELEASE_TAG,SSH_DIR
           script: |
             set -e
             cd "$SSH_DIR"
@@ -128,7 +128,7 @@ Add this step at the end of the `steps:` list in `.github/workflows/deploy.yml` 
           SSH_DIR: ${{ secrets.SSH_DIR }}
 ```
 
-Note: `SSH_DIR` is passed as an `env` var (not `envs:`) at the step level so it's available inside the `script:` block via the shell's own environment — `appleboy/ssh-action` exports every `env:` entry on the step into the remote session automatically, same as `RELEASE_TAG` listed in `envs:`. Both `RELEASE_TAG` and `SSH_DIR` must end up set in the remote shell for `cd "$SSH_DIR"` and `git checkout "$RELEASE_TAG"` to work.
+Note: `envs:` is the only mechanism `appleboy/ssh-action` uses to forward variables into the remote shell — a step-level `env:` entry by itself stays local to the wrapper action and never reaches the remote script. That's why both `RELEASE_TAG` and `SSH_DIR` are named in the comma-separated `envs:` list above, in addition to being set under `env:`. Both must end up set in the remote shell for `cd "$SSH_DIR"` and `git checkout "$RELEASE_TAG"` to work.
 
 - [ ] **Step 2: Syntax-check the embedded shell script in isolation**
 
@@ -261,11 +261,14 @@ git commit -m "Pin GitHub Actions to commit SHAs in deploy workflow"
 
 ## Manual verification (not automatable in this environment)
 
-This plan has no live server or GitHub release event to test against locally, so the final confidence check happens after merging: publish a real GitHub release (or a test pre-release) once this branch is merged, watch the Actions run, and confirm:
+This plan has no live server or GitHub release event to test against locally, so the final confidence check happens after merging: publish a real GitHub release once this branch is merged, watch the Actions run, and confirm:
 
-1. The gate steps (install/lint/test) run and pass.
-2. The SSH step connects and the server ends up on the new tag (`git log -1` on the server matches the release tag).
-3. `pm2 list` on the server shows `qrframe` as `online` with a recent restart time.
-4. The site serves the new release's changes.
+1. Before the first real deploy, confirm the toolchain is actually reachable from a non-interactive shell — `appleboy/ssh-action` runs a non-login, non-interactive remote shell, where `~/.bashrc` often early-returns before setting up nvm-managed tools, so `node`/`corepack`/`pnpm`/`pm2` can be missing from `PATH` there even though they work fine over an interactive SSH session: `ssh <user>@<host> 'node -v; corepack --version; pnpm -v; pm2 -v'`.
+2. The gate steps (install/lint/test) run and pass.
+3. The SSH step connects and the server ends up on the new tag (`git log -1` on the server matches the release tag).
+4. `pm2 list` on the server shows `qrframe` as `online` with a recent restart time.
+5. The site serves the new release's changes.
+
+Note: the `release: types: [published]` trigger fires for pre-releases too, so publishing a pre-release to "test" this is not a dry run — it triggers the same real deploy against production as a full release.
 
 This isn't a plan task because it requires infrastructure (a real server, a real release) outside this repo checkout — call it out to the user after all tasks are merged.
