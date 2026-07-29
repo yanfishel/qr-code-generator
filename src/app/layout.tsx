@@ -132,7 +132,13 @@ export default function RootLayout({
                   className="shrink-0"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/fishart.png" alt="FishArt" width={90} height={21} className="h-[21px] w-auto" />
+                  <img
+                    src="/fishart.png"
+                    alt="FishArt"
+                    width={90}
+                    height={21}
+                    className="h-[21px] w-auto invert opacity-60 dark:invert-0 dark:opacity-70"
+                  />
                 </a>
                 <p className="min-w-0 flex-1 text-center font-mono text-xs text-muted-foreground">
                   QRFrame © {new Date().getFullYear()}. Made with <span className="text-red-500">♥</span> for the
