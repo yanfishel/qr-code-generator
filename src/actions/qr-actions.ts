@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/current-user";
 import { qrFormSchema } from "@/lib/qr-schema";
@@ -35,6 +36,35 @@ export async function listQrCodes(page: number, pageSize: number) {
 export async function getQrCode(id: string) {
   const user = await getCurrentUser();
   return prisma.qrCode.findFirst({ where: { id, userId: user.id } });
+}
+
+// Only the fields the public share page (`/code/[id]`) actually renders.
+// Deliberately excludes `userId`/`createdAt`/`updatedAt`: this row is passed
+// as a prop to a client component, which Next.js serializes into the RSC
+// flight payload embedded in the delivered HTML — an anonymous visitor could
+// otherwise read `userId` via view-source and correlate two share links to
+// the same account.
+const publicQrCodeSelect = {
+  id: true,
+  name: true,
+  type: true,
+  data: true,
+  fgColor: true,
+  bgColor: true,
+  size: true,
+  level: true,
+  dotStyle: true,
+  finderFrameStyle: true,
+  finderMarkerStyle: true,
+  margin: true,
+  logoDataUrl: true,
+  logoSize: true,
+} satisfies Prisma.QrCodeSelect;
+
+export type PublicQrCode = Prisma.QrCodeGetPayload<{ select: typeof publicQrCodeSelect }>;
+
+export async function getPublicQrCode(id: string) {
+  return prisma.qrCode.findUnique({ where: { id }, select: publicQrCodeSelect });
 }
 
 export async function updateQrCode(id: string, input: unknown) {
