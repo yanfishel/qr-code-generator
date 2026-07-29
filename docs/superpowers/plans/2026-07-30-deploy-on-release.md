@@ -277,13 +277,22 @@ pairing. (This plan's Global Constraints section above has been updated in
 place to reflect the corrected values, rather than adding a redundant
 statement here.)
 
-**4b. Missing bootstrap clone.** Once the Node/pnpm fix let the gate and
-the SSH step actually run, the very first real deploy failed with `fatal:
-not a git repository (or any of the parent directories): .git`. The
-deploy script assumed `$SSH_DIR` was already an existing git working copy
-(per the spec's description of that secret: "path to the app's working
-copy on the server") — nobody had cloned the repo there yet, since this was
-the first deploy ever. Fixed by making the script self-bootstrapping:
+**4b. Missing bootstrap (first attempt: `git clone`, then corrected to `git init`).**
+Once the Node/pnpm fix let the gate and the SSH step actually run, the very
+first real deploy failed with `fatal: not a git repository (or any of the
+parent directories): .git`. The deploy script assumed `$SSH_DIR` was already
+an existing git working copy (per the spec's description of that secret:
+"path to the app's working copy on the server") — nobody had cloned the repo
+there yet, since this was the first deploy ever.
+
+The first fix attempt added a `git clone` bootstrap, which itself failed on
+the very next retry: `fatal: destination path '.../public_html' already
+exists and is not an empty directory.` — `$SSH_DIR` here is a shared-hosting
+`public_html`-style path that the hosting panel provisions with its own
+default content before any deploy ever runs, so it's never actually an
+empty directory to clone into. Corrected to `git init` + `git remote add`
+instead, which adopts an existing (non-empty, non-git) directory in place
+rather than requiring it to be empty:
 
 ```yaml
           envs: RELEASE_TAG,SSH_DIR,REPO_URL
@@ -291,7 +300,9 @@ the first deploy ever. Fixed by making the script self-bootstrapping:
           script: |
             set -e
             if [ ! -d "$SSH_DIR/.git" ]; then
-              git clone "$REPO_URL" "$SSH_DIR"
+              mkdir -p "$SSH_DIR"
+              git init "$SSH_DIR"
+              git -C "$SSH_DIR" remote add origin "$REPO_URL"
             fi
             cd "$SSH_DIR"
             git fetch --tags --force
@@ -312,15 +323,19 @@ the first deploy ever. Fixed by making the script self-bootstrapping:
 
 `REPO_URL` is derived from `github.repository` (owner/repo) rather than
 hardcoded, so it stays correct if the repo is ever renamed or transferred.
-This relies on the repo being public (an anonymous HTTPS clone) — if it
-were ever made private, the server would need its own GitHub credentials
-(a deploy key or PAT) to clone, which is out of scope here since the repo
-is public today. This only bootstraps a missing directory; it does not
-handle a `$SSH_DIR` that exists, is non-empty, but isn't a git repo (e.g.
-leftover files from a different setup) — `git clone` would fail into that,
-same as it would for a human running the same command by hand.
+This relies on the repo being public (an anonymous HTTPS fetch) — if it were
+ever made private, the server would need its own GitHub credentials (a
+deploy key or PAT), which is out of scope here since the repo is public
+today. `git init`/`remote add` only run once, guarded by the same `$SSH_DIR/
+.git` check as before; every later deploy skips straight to `git fetch`.
+Known limitation, accepted rather than fixed: any pre-existing untracked
+files in `$SSH_DIR` (the hosting panel's default `public_html` contents,
+stray files from a previous manual setup) are left alone forever — `checkout
+-f`/`reset --hard` only touch tracked files, and this script deliberately
+never runs a destructive `git clean`, since that would also delete the
+untracked `.env` this project's design depends on surviving every deploy.
 
-- [ ] **Step 1: Apply both fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's bootstrap-clone block, `REPO_URL` in both `envs:` and `env:`).
+- [ ] **Step 1: Apply both fixes to `.github/workflows/deploy.yml`** as shown above (4a's `node-version: "22"`, 4b's `git init`/`remote add` bootstrap block, `REPO_URL` in both `envs:` and `env:`).
 - [ ] **Step 2: Validate**: `pnpm dlx js-yaml .github/workflows/deploy.yml` parses cleanly; `bash -n` on the script (extracted the same way as prior tasks) passes.
 - [ ] **Step 3: Commit and open a PR against `main`** (the original three tasks are already merged, so this lands as a follow-up branch/PR rather than a continuation of the original `ci/deploy-on-release` branch).
 

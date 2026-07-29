@@ -48,7 +48,9 @@ jobs:
           script: |
             set -e
             if [ ! -d "$SSH_DIR/.git" ]; then
-              git clone "$REPO_URL" "$SSH_DIR"
+              mkdir -p "$SSH_DIR"
+              git init "$SSH_DIR"
+              git -C "$SSH_DIR" remote add origin "$REPO_URL"
             fi
             cd "$SSH_DIR"
             git fetch --tags --force
