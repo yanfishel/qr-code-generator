@@ -571,7 +571,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
             </div>
 
             <div className="flex w-full flex-wrap justify-between gap-3">
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button type="button" variant="outline" onClick={handleDownloadPng}>
@@ -607,7 +607,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                   </Tooltip>
                 ) : null}
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-1">
                 <Button
                   type="submit"
                   form="qr-generator-form"
