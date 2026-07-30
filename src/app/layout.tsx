@@ -124,7 +124,7 @@ export default function RootLayout({
             </header>
             <main className="mx-auto w-full max-w-4xl flex-1 px-4 pt-5 pb-10">{children}</main>
             <footer className="border-t border-border/70 bg-background/80 backdrop-blur-sm">
-              <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
+              <div className="mx-auto flex max-w-4xl flex-col items-center gap-3 px-4 py-4 sm:flex-row sm:justify-between sm:gap-4 sm:py-3">
                 <a
                   href="https://fishart.co.il"
                   target="_blank"
@@ -140,7 +140,7 @@ export default function RootLayout({
                     className="h-[21px] w-auto invert opacity-60 dark:invert-0 dark:opacity-70"
                   />
                 </a>
-                <p className="min-w-0 flex-1 text-center font-mono text-xs text-muted-foreground">
+                <p className="min-w-0 text-center font-mono text-xs text-muted-foreground sm:flex-1">
                   QRFrame © {new Date().getFullYear()}. Made with <span className="text-red-500">♥</span> for the
                   web
                 </p>
