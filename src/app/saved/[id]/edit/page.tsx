@@ -23,7 +23,7 @@ export default async function EditQrCodePage({ params }: EditQrCodePageProps) {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
+      <div className="space-y-2 border-b border-border pb-4">
         <p className="font-mono text-xs tracking-widest text-primary uppercase">Edit</p>
         <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {qrCode.name || "Edit QR code"}
