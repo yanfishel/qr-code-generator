@@ -72,7 +72,7 @@ Pick a content type, style every pixel, download it as PNG or SVG — and save i
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - pnpm
 - A MySQL database reachable from your machine (plus a second, empty database used only as Prisma's [shadow database](https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/shadow-database))
 - A [Clerk](https://clerk.com/) application (for sign-in)
