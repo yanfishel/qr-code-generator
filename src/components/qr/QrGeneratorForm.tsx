@@ -474,7 +474,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
             </Accordion>
           )}
 
-          <div className="space-y-3 border-t border-border pt-6">
+          <div className="space-y-3 border-t border-primary pt-6">
             <FormField
               control={form.control}
               name="name"
