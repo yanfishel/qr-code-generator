@@ -10,10 +10,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      position="top-center"
+      richColors
       className="toaster group"
       icons={{
         success: (
-          <CircleCheckIcon className="size-4" />
+          <CircleCheckIcon className="size-4 text-primary" />
         ),
         info: (
           <InfoIcon className="size-4" />
@@ -22,7 +24,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           <TriangleAlertIcon className="size-4" />
         ),
         error: (
-          <OctagonXIcon className="size-4" />
+          <OctagonXIcon className="size-4 text-destructive" />
         ),
         loading: (
           <Loader2Icon className="size-4 animate-spin" />
@@ -34,6 +36,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          "--success-bg": "color-mix(in oklch, var(--primary) 12%, var(--popover))",
+          "--success-border": "color-mix(in oklch, var(--primary) 45%, var(--border))",
+          "--success-text": "var(--popover-foreground)",
+          "--error-bg": "color-mix(in oklch, var(--destructive) 12%, var(--popover))",
+          "--error-border": "color-mix(in oklch, var(--destructive) 45%, var(--border))",
+          "--error-text": "var(--popover-foreground)",
         } as React.CSSProperties
       }
       toastOptions={{
