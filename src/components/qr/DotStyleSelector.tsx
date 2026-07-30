@@ -34,9 +34,9 @@ export function DotStyleSelector({ value, onChange }: DotStyleSelectorProps) {
                 : "cursor-pointer border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
             )}
           >
-            <span className="flex gap-0.5" aria-hidden="true">
+            <span className="flex gap-1" aria-hidden="true">
               {[0, 1, 2].map((i) => (
-                <span key={i} className={cn("size-2 bg-current", SHAPE_CLASSNAME[style])} />
+                <span key={i} className={cn("size-3 bg-current", SHAPE_CLASSNAME[style])} />
               ))}
             </span>
             <span className="font-mono text-[0.6rem] tracking-wide uppercase">
