@@ -119,6 +119,23 @@
     --sidebar-ring: #2BC4B4;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: none;
+  }
+
+  ::view-transition-new(root) {
+    animation: theme-reveal 0.5s ease-in-out;
+    clip-path: circle(0px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+
+  @keyframes theme-reveal {
+    to {
+      clip-path: circle(var(--theme-radius, 150%) at var(--theme-x, 50%) var(--theme-y, 50%));
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
