@@ -538,23 +538,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           </Card>
         </ViewfinderFrame>
 
-        <div className="mt-4 flex flex-wrap justify-center gap-3">
-          <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
-            <Download /> PNG
-          </Button>
-          <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
-            <Download /> SVG
-          </Button>
-          {mode === "edit" && qrCode ? (
-            <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
-              <Link href={`/code/${qrCode.id}`}>
-                <Share2 />
-              </Link>
-            </Button>
-          ) : null}
-        </div>
-
-        <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
+        <div className="mt-4 grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
           {[
             { label: "Type", value: qrTypeLabels[qrType] },
             { label: "Size", value: `${style.size}px` },
@@ -572,17 +556,21 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           ))}
         </div>
 
-        {hasContent ? (
-          <div className="w-full space-y-1.5 rounded-md border border-border bg-muted p-3">
-            <p className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-              Encoded value
-            </p>
-            <p className="font-mono text-xs break-all text-primary">
-              {qrValue.length > 160 ? qrValue.slice(0, 160) + "…" : qrValue}
-            </p>
-            <p className="font-mono text-[0.6rem] text-muted-foreground">{qrValue.length} chars</p>
-          </div>
-        ) : null}
+        <div className="flex flex-wrap justify-center gap-3">
+          <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
+            <Download /> PNG
+          </Button>
+          <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
+            <Download /> SVG
+          </Button>
+          {mode === "edit" && qrCode ? (
+            <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
+              <Link href={`/code/${qrCode.id}`}>
+                <Share2 />
+              </Link>
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
