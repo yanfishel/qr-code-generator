@@ -50,7 +50,7 @@ describe("ThemeToggle", () => {
   it("renders a Sun icon on the trigger when the theme is light", () => {
     const { container } = render(<ThemeToggle />);
 
-    expect(screen.getByRole("button", { name: "Toggle theme" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change theme" })).toBeInTheDocument();
     expect(container.querySelector(".lucide-sun")).toBeInTheDocument();
   });
 
@@ -79,11 +79,11 @@ describe("ThemeToggle", () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole("button", { name: "Toggle theme" }));
+    await user.click(screen.getByRole("button", { name: "Change theme" }));
 
-    expect(await screen.findByRole("menuitem", { name: /^Light/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /^Dark/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /^System/ })).toBeInTheDocument();
+    expect(await screen.findByRole("menuitemradio", { name: /^Light/ })).toBeInTheDocument();
+    expect(screen.getByRole("menuitemradio", { name: /^Dark/ })).toBeInTheDocument();
+    expect(screen.getByRole("menuitemradio", { name: /^System/ })).toBeInTheDocument();
   });
 
   it("shows a check mark next to the currently active option", async () => {
@@ -91,11 +91,13 @@ describe("ThemeToggle", () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole("button", { name: "Toggle theme" }));
+    await user.click(screen.getByRole("button", { name: "Change theme" }));
 
-    const darkItem = await screen.findByRole("menuitem", { name: /^Dark/ });
+    const darkItem = await screen.findByRole("menuitemradio", { name: /^Dark/ });
+    expect(darkItem).toHaveAttribute("aria-checked", "true");
     expect(darkItem.querySelector(".lucide-check")).toBeInTheDocument();
-    const lightItem = screen.getByRole("menuitem", { name: /^Light/ });
+    const lightItem = screen.getByRole("menuitemradio", { name: /^Light/ });
+    expect(lightItem).toHaveAttribute("aria-checked", "false");
     expect(lightItem.querySelector(".lucide-check")).not.toBeInTheDocument();
   });
 
@@ -103,8 +105,8 @@ describe("ThemeToggle", () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole("button", { name: "Toggle theme" }));
-    await user.click(await screen.findByRole("menuitem", { name: /^Dark/ }));
+    await user.click(screen.getByRole("button", { name: "Change theme" }));
+    await user.click(await screen.findByRole("menuitemradio", { name: /^Dark/ }));
 
     expect(setThemeMock).toHaveBeenCalledWith("dark");
   });
@@ -113,8 +115,8 @@ describe("ThemeToggle", () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole("button", { name: "Toggle theme" }));
-    await user.click(await screen.findByRole("menuitem", { name: /^System/ }));
+    await user.click(screen.getByRole("button", { name: "Change theme" }));
+    await user.click(await screen.findByRole("menuitemradio", { name: /^System/ }));
 
     expect(setThemeMock).toHaveBeenCalledWith("system");
   });

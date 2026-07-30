@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Monitor, Check, type LucideIcon } from "lucide-react";
+import { Sun, Moon, Monitor, type LucideIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -34,20 +35,21 @@ export function ThemeToggle() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Toggle theme"
-          className="flex size-[34px] items-center justify-center rounded-full border border-border/70 bg-background text-foreground hover:bg-muted"
+          aria-label="Change theme"
+          className="flex size-[34px] cursor-pointer items-center justify-center rounded-full border border-border/70 bg-background text-foreground hover:bg-muted"
         >
           <TriggerIcon className="size-4" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
-          <DropdownMenuItem key={value} onSelect={() => setTheme(value)}>
-            <Icon className="size-4" />
-            {label}
-            {theme === value && <Check className="ml-auto size-4" />}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuRadioItem key={value} value={value}>
+              <Icon className="size-4" />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
