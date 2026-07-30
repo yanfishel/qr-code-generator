@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Trash2, Download, Pencil, Share2 } from "lucide-react";
+import { Trash2, Download, Pencil } from "lucide-react";
 import type { QrCode } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
@@ -55,34 +55,40 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
     <Card className="gap-0 overflow-hidden py-0 transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5">
       <CardContent className="relative flex justify-center bg-soft-gradient p-3">
         <QrTypeBadge type={qrCode.type} className="absolute top-1 left-1 z-10 shadow-sm" />
-        <QrCanvas
-          ref={canvasRef}
-          value={qrCode.data}
-          size={PREVIEW_SIZE}
-          fgColor={qrCode.fgColor}
-          bgColor={qrCode.bgColor}
-          level={qrCode.level}
-          marginSize={qrCode.margin}
-          dotStyle={qrCode.dotStyle}
-          finderFrameStyle={qrCode.finderFrameStyle}
-          finderMarkerStyle={qrCode.finderMarkerStyle}
-          imageSettings={imageSettings}
-          style={{width:'100%', height:'100%'}}
-        />
-        <QrSvg
-          ref={svgRef}
-          value={qrCode.data}
-          size={PREVIEW_SIZE}
-          fgColor={qrCode.fgColor}
-          bgColor={qrCode.bgColor}
-          level={qrCode.level}
-          marginSize={qrCode.margin}
-          dotStyle={qrCode.dotStyle}
-          finderFrameStyle={qrCode.finderFrameStyle}
-          finderMarkerStyle={qrCode.finderMarkerStyle}
-          imageSettings={imageSettings}
-          className="hidden"
-        />
+        <Link
+          href={`/code/${qrCode.id}`}
+          className="cursor-pointer"
+          aria-label="View public share page"
+        >
+          <QrCanvas
+            ref={canvasRef}
+            value={qrCode.data}
+            size={PREVIEW_SIZE}
+            fgColor={qrCode.fgColor}
+            bgColor={qrCode.bgColor}
+            level={qrCode.level}
+            marginSize={qrCode.margin}
+            dotStyle={qrCode.dotStyle}
+            finderFrameStyle={qrCode.finderFrameStyle}
+            finderMarkerStyle={qrCode.finderMarkerStyle}
+            imageSettings={imageSettings}
+            style={{width:'100%', height:'100%'}}
+          />
+          <QrSvg
+            ref={svgRef}
+            value={qrCode.data}
+            size={PREVIEW_SIZE}
+            fgColor={qrCode.fgColor}
+            bgColor={qrCode.bgColor}
+            level={qrCode.level}
+            marginSize={qrCode.margin}
+            dotStyle={qrCode.dotStyle}
+            finderFrameStyle={qrCode.finderFrameStyle}
+            finderMarkerStyle={qrCode.finderMarkerStyle}
+            imageSettings={imageSettings}
+            className="hidden"
+          />
+        </Link>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-3">
         <p className="truncate text-sm font-medium">{qrCode.name || qrCode.data}</p>
@@ -111,22 +117,6 @@ export function SavedQrCard({ qrCode, onDelete }: SavedQrCardProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                className="cursor-pointer"
-                aria-label="Share"
-                asChild
-              >
-                <Link href={`/code/${qrCode.id}`}>
-                  <Share2 />
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Share</TooltipContent>
-          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

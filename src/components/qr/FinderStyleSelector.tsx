@@ -37,7 +37,7 @@ export function FinderStyleSelector({ value, onChange, filled = true }: FinderSt
           >
             <span
               className={cn(
-                "size-3",
+                "size-4",
                 filled ? "bg-current" : "border-2 border-current bg-transparent",
                 SHAPE_CLASSNAME[style],
               )}
