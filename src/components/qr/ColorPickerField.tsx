@@ -47,7 +47,10 @@ export function ColorPickerField({ value, onChange, id }: ColorPickerFieldProps)
           className="font-mono"
         />
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-1">
+        <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
+          Opacity — {alpha}%
+        </span>
         <input
           type="range"
           min={0}
@@ -55,11 +58,8 @@ export function ColorPickerField({ value, onChange, id }: ColorPickerFieldProps)
           value={alpha}
           onChange={(e) => onChange(withAlpha(base, Number(e.target.value)))}
           aria-label="Opacity"
-          className="h-1.5 flex-1 cursor-pointer accent-primary"
+          className="h-1.5 w-full cursor-pointer accent-primary"
         />
-        <span className="w-9 shrink-0 text-right font-mono text-xs text-muted-foreground">
-          {alpha}%
-        </span>
       </div>
     </div>
   );

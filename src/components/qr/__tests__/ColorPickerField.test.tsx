@@ -11,13 +11,13 @@ describe("ColorPickerField", () => {
   it("renders the slider at 100% for a plain 6-digit value", () => {
     render(<ColorPickerField value="#112233" onChange={vi.fn()} />);
     expect(screen.getByRole("slider", { name: "Opacity" })).toHaveValue("100");
-    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("Opacity — 100%")).toBeInTheDocument();
   });
 
   it("renders the slider at the rounded percentage for an 8-digit value", () => {
     render(<ColorPickerField value="#11223380" onChange={vi.fn()} />);
     expect(screen.getByRole("slider", { name: "Opacity" })).toHaveValue("50");
-    expect(screen.getByText("50%")).toBeInTheDocument();
+    expect(screen.getByText("Opacity — 50%")).toBeInTheDocument();
   });
 
   it("appends an alpha byte when the slider moves off 100%", () => {
