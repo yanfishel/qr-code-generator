@@ -81,7 +81,22 @@ jobs:
               }
             }
 
-          allowed_tools: "Bash(npm:*),Bash(sqlite3:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,..."
+          allowed_tools: >-
+            Bash(pnpm lint:*),
+            Bash(pnpm test:*),
+            Bash(pnpm build:*),
+            mcp__playwright__browser_snapshot,
+            mcp__playwright__browser_click,
+            mcp__playwright__browser_navigate,
+            mcp__playwright__browser_type,
+            mcp__playwright__browser_take_screenshot,
+            mcp__playwright__browser_console_messages,
+            mcp__playwright__browser_network_requests,
+            mcp__playwright__browser_wait_for,
+            mcp__playwright__browser_press_key,
+            mcp__playwright__browser_hover,
+            mcp__playwright__browser_select_option,
+            mcp__playwright__browser_evaluate
 
 
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
