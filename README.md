@@ -40,6 +40,7 @@ Pick a content type, style every pixel, download it as PNG or SVG — and save i
 - ⬇️ **PNG/SVG export** — download the generated code in either format, pixel-identical between the two renderers.
 - 💾 **Saved codes** — signed-in users can save codes, edit them later, and share a permanent public link at `/code/[id]`; the generator and downloads themselves stay public.
 - 🔒 **Frictionless auth** — hit Save while signed out and QRFrame opens a sign-in modal, then retries your save automatically once you're in — no lost work, no redirect roundtrip.
+- 🌗 **Light/Dark/System theme** — pick a theme from the header, or leave it on System to follow your OS automatically; your choice is remembered on your next visit.
 
 ## Screenshots
 
