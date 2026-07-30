@@ -9,7 +9,7 @@ import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { QrCode } from "@prisma/client";
-import { Download, Save, Copy, CheckCheck, Layers, Settings2 } from "lucide-react";
+import { Download, Save, Share2, Layers, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,7 +112,6 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
   const { isSignedIn } = useAuth();
   const { openSignIn } = useClerk();
   const [isSaving, startSaving] = useTransition();
-  const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const [qrType, setQrType] = useState<QrType>(qrCode?.type ?? "URL");
   const [fields, setFields] = useState<QrFieldValues>(() =>
@@ -152,21 +151,6 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
 
   function handleDownloadSvg() {
     download(svgRef.current, style.name || "qr-code");
-  }
-
-  async function handleCopy() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    try {
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
-    } catch {
-      toast.error("Could not copy the QR code");
-    }
   }
 
   function saveQrCode(payload: QrFormValues) {
@@ -561,16 +545,13 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
             <Download /> SVG
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={handleCopy}
-            disabled={!hasContent}
-            aria-label="Copy QR code"
-          >
-            {copied ? <CheckCheck /> : <Copy />}
-          </Button>
+          {mode === "edit" && qrCode ? (
+            <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
+              <Link href={`/code/${qrCode.id}`}>
+                <Share2 />
+              </Link>
+            </Button>
+          ) : null}
         </div>
 
         <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
@@ -581,7 +562,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           ].map(({ label, value }) => (
             <div
               key={label}
-              className="flex flex-col items-center gap-0.5 border-r border-border py-3 last:border-r-0"
+              className="flex flex-col items-center gap-0.5 border-r border-border py-1.5 last:border-r-0"
             >
               <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
                 {label}
