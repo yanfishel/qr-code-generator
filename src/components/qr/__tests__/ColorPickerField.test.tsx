@@ -1,53 +1,66 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ColorPickerField } from "@/components/qr/ColorPickerField";
 
 describe("ColorPickerField", () => {
-  it("does not render a transparency toggle unless allowTransparent is set", () => {
-    render(<ColorPickerField value="#FFFFFF" onChange={vi.fn()} />);
-    expect(screen.queryByTitle(/transparent/i)).not.toBeInTheDocument();
-  });
-
   it("shows the current hex value in the text input", () => {
-    render(<ColorPickerField value="#112233" onChange={vi.fn()} allowTransparent />);
+    render(<ColorPickerField value="#112233" onChange={vi.fn()} />);
     expect(screen.getByPlaceholderText("#000000")).toHaveValue("#112233");
   });
 
-  it("appends the alpha suffix to the current color when making it transparent", async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<ColorPickerField value="#112233" onChange={onChange} allowTransparent />);
-
-    await user.click(screen.getByTitle("Make the background transparent"));
-
-    expect(onChange).toHaveBeenCalledWith("#11223300");
+  it("renders the slider at 100% for a plain 6-digit value", () => {
+    render(<ColorPickerField value="#112233" onChange={vi.fn()} />);
+    expect(screen.getByRole("slider", { name: "Opacity" })).toHaveValue("100");
+    expect(screen.getByText("100%")).toBeInTheDocument();
   });
 
-  it("strips the alpha suffix when turning transparency back off", async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<ColorPickerField value="#11223300" onChange={onChange} allowTransparent />);
+  it("renders the slider at the rounded percentage for an 8-digit value", () => {
+    render(<ColorPickerField value="#11223380" onChange={vi.fn()} />);
+    expect(screen.getByRole("slider", { name: "Opacity" })).toHaveValue("50");
+    expect(screen.getByText("50%")).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByTitle("Use a solid background color"));
+  it("appends an alpha byte when the slider moves off 100%", () => {
+    const onChange = vi.fn();
+    render(<ColorPickerField value="#112233" onChange={onChange} />);
+
+    fireEvent.change(screen.getByRole("slider", { name: "Opacity" }), {
+      target: { value: "50" },
+    });
+
+    expect(onChange).toHaveBeenCalledWith("#11223380");
+  });
+
+  it("strips the alpha byte when the slider returns to 100%", () => {
+    const onChange = vi.fn();
+    render(<ColorPickerField value="#11223380" onChange={onChange} />);
+
+    fireEvent.change(screen.getByRole("slider", { name: "Opacity" }), {
+      target: { value: "100" },
+    });
 
     expect(onChange).toHaveBeenCalledWith("#112233");
   });
 
-  it("disables the color swatch and text input while transparent", () => {
-    render(<ColorPickerField value="#FFFFFF00" onChange={vi.fn()} allowTransparent />);
+  it("produces the fully-transparent suffix at 0%", () => {
+    const onChange = vi.fn();
+    render(<ColorPickerField value="#112233" onChange={onChange} />);
 
-    expect(screen.getByPlaceholderText("#000000")).toBeDisabled();
-    expect(screen.getByTitle("Use a solid background color")).toHaveAttribute("aria-pressed", "true");
+    fireEvent.change(screen.getByRole("slider", { name: "Opacity" }), {
+      target: { value: "0" },
+    });
+
+    expect(onChange).toHaveBeenCalledWith("#11223300");
   });
 
-  it("falls back to white as the base color when re-enabling from an invalid value", async () => {
-    const user = userEvent.setup();
+  it("falls back to white as the base color when adjusting alpha from an invalid value", () => {
     const onChange = vi.fn();
-    render(<ColorPickerField value="" onChange={onChange} allowTransparent />);
+    render(<ColorPickerField value="" onChange={onChange} />);
 
-    await user.click(screen.getByTitle("Make the background transparent"));
+    fireEvent.change(screen.getByRole("slider", { name: "Opacity" }), {
+      target: { value: "50" },
+    });
 
-    expect(onChange).toHaveBeenCalledWith("#FFFFFF00");
+    expect(onChange).toHaveBeenCalledWith("#FFFFFF80");
   });
 });
