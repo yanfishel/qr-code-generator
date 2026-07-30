@@ -61,42 +61,13 @@ jobs:
           additional_permissions: |
             actions: read
 
-          custom_instructions: |
-            The project is already set up with all dependencies installed.
-            The server is already running at localhost:3000. Logs from it
-            are being written to logs.txt. If needed, use the mcp__playwright
-            set of tools to launch a browser and interact with the app.
-
-          mcp_config: |
-            {
-              "mcpServers": {
-                "playwright": {
-                  "command": "npx",
-                  "args": [
-                    "@playwright/mcp@latest",
-                    "--allowed-origins",
-                    "localhost:3000;cdn.tailwindcss.com;esm.sh"
-                  ]
-                }
-              }
-            }
-
-          allowed_tools: >-
-            Bash(pnpm lint:*),
-            Bash(pnpm test:*),
-            Bash(pnpm build:*),
-            mcp__playwright__browser_snapshot,
-            mcp__playwright__browser_click,
-            mcp__playwright__browser_navigate,
-            mcp__playwright__browser_type,
-            mcp__playwright__browser_take_screenshot,
-            mcp__playwright__browser_console_messages,
-            mcp__playwright__browser_network_requests,
-            mcp__playwright__browser_wait_for,
-            mcp__playwright__browser_press_key,
-            mcp__playwright__browser_hover,
-            mcp__playwright__browser_select_option,
-            mcp__playwright__browser_evaluate
+          # custom_instructions, mcp_config, and allowed_tools are no longer valid
+          # top-level inputs on claude-code-action@v1 (silently ignored, with a
+          # workflow warning) - they all move under claude_args now.
+          claude_args: |
+            --append-system-prompt "The project is already set up with all dependencies installed. The server is already running at localhost:3000. Logs from it are being written to logs.txt. If needed, use the mcp__playwright set of tools to launch a browser and interact with the app."
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--allowed-origins","localhost:3000;cdn.tailwindcss.com;esm.sh"]}}}'
+            --allowedTools "Bash(pnpm lint:*),Bash(pnpm test:*),Bash(pnpm build:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_navigate,mcp__playwright__browser_type,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_press_key,mcp__playwright__browser_hover,mcp__playwright__browser_select_option,mcp__playwright__browser_evaluate"
 
 
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
