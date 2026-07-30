@@ -1,61 +1,66 @@
 "use client";
 
-import { SquareDashed } from "lucide-react";
-
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 type ColorPickerFieldProps = {
   value: string;
   onChange: (value: string) => void;
   id?: string;
-  allowTransparent?: boolean;
 };
 
-const TRANSPARENT_SUFFIX = "00";
-
-function opaqueBase(value: string) {
+function baseColor(value: string) {
   return /^#[0-9a-fA-F]{6}/.test(value) ? value.slice(0, 7) : "#FFFFFF";
 }
 
-export function ColorPickerField({ value, onChange, id, allowTransparent }: ColorPickerFieldProps) {
-  const isTransparent = !!allowTransparent && /^#[0-9a-fA-F]{6}00$/.test(value);
+function alphaPercent(value: string) {
+  const match = /^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})$/.exec(value);
+  if (!match) return 100;
+  return Math.round((parseInt(match[1], 16) / 255) * 100);
+}
+
+function withAlpha(base: string, percent: number) {
+  if (percent >= 100) return base;
+  const byte = Math.round((percent / 100) * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `${base}${byte}`;
+}
+
+export function ColorPickerField({ value, onChange, id }: ColorPickerFieldProps) {
+  const base = baseColor(value);
+  const alpha = alphaPercent(value);
 
   return (
-    <div className="flex items-center gap-2">
-      <input
-        id={id}
-        type="color"
-        value={/^#([0-9a-fA-F]{6})$/.test(value) ? value : opaqueBase(value)}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={isTransparent}
-        className="h-9 w-10 shrink-0 cursor-pointer rounded-md border border-input bg-transparent p-1 disabled:cursor-not-allowed disabled:opacity-40"
-      />
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="#000000"
-        disabled={isTransparent}
-        className="font-mono disabled:opacity-60"
-      />
-      {allowTransparent ? (
-        <button
-          type="button"
-          title={isTransparent ? "Use a solid background color" : "Make the background transparent"}
-          aria-pressed={isTransparent}
-          onClick={() =>
-            onChange(isTransparent ? opaqueBase(value) : `${opaqueBase(value)}${TRANSPARENT_SUFFIX}`)
-          }
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors",
-            isTransparent
-              ? "cursor-default border-primary bg-accent text-accent-foreground"
-              : "cursor-pointer border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground",
-          )}
-        >
-          <SquareDashed className="size-4" />
-        </button>
-      ) : null}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <input
+          id={id}
+          type="color"
+          value={base}
+          onChange={(e) => onChange(withAlpha(e.target.value, alpha))}
+          className="h-9 w-10 shrink-0 cursor-pointer rounded-md border border-input bg-transparent p-1"
+        />
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#000000"
+          className="font-mono"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
+          Opacity — {alpha}%
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={alpha}
+          onChange={(e) => onChange(withAlpha(base, Number(e.target.value)))}
+          aria-label="Opacity"
+          className="h-1.5 w-full cursor-pointer accent-primary"
+        />
+      </div>
     </div>
   );
 }

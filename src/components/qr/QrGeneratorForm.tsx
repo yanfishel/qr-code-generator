@@ -297,7 +297,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                         <FormItem>
                           <FormLabel className={fieldLabelClassName}>Background</FormLabel>
                           <FormControl>
-                            <ColorPickerField value={field.value} onChange={field.onChange} allowTransparent />
+                            <ColorPickerField value={field.value} onChange={field.onChange} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
