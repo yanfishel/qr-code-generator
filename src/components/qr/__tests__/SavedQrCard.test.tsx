@@ -141,10 +141,13 @@ describe("SavedQrCard", () => {
     expect(screen.getByRole("link", { name: /edit/i })).toHaveAttribute("href", "/saved/qr_7/edit");
   });
 
-  it("links the share button to the code's public page", () => {
+  it("links the QR preview to the code's public page", () => {
     renderCard(<SavedQrCard qrCode={makeQrCode({ id: "qr_7" })} onDelete={vi.fn()} />);
 
-    expect(screen.getByRole("link", { name: /share/i })).toHaveAttribute("href", "/code/qr_7");
+    expect(screen.getByRole("link", { name: /view public share page/i })).toHaveAttribute(
+      "href",
+      "/code/qr_7",
+    );
   });
 
   it("downloads the PNG using the canvas ref and the saved name", async () => {
