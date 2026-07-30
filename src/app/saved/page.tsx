@@ -25,7 +25,7 @@ export default async function SavedPage({ searchParams }: SavedPageProps) {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
+      <div className="space-y-2 border-b border-border pb-4">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 font-mono text-xs tracking-widest uppercase">
           <Link href="/" className="text-muted-foreground hover:text-foreground">
             Generator

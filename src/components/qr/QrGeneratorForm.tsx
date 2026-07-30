@@ -9,7 +9,7 @@ import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { QrCode } from "@prisma/client";
-import { Download, Save, Share2, Layers, Settings2 } from "lucide-react";
+import { Download, Save, Share2, Trash2, Layers, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Accordion,
   AccordionContent,
@@ -40,7 +52,7 @@ import { FinderStyleSelector } from "@/components/qr/FinderStyleSelector";
 import { QrCanvas } from "@/components/qr/QrCanvas";
 import { QrSvg } from "@/components/qr/QrSvg";
 import { useQrDownload } from "@/hooks/use-qr-download";
-import { createQrCode, updateQrCode } from "@/actions/qr-actions";
+import { createQrCode, updateQrCode, deleteQrCode } from "@/actions/qr-actions";
 import {
   buildQrValue,
   defaultQrFieldValues,
@@ -112,6 +124,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
   const { isSignedIn } = useAuth();
   const { openSignIn } = useClerk();
   const [isSaving, startSaving] = useTransition();
+  const [isDeleting, startDeleting] = useTransition();
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const [qrType, setQrType] = useState<QrType>(qrCode?.type ?? "URL");
   const [fields, setFields] = useState<QrFieldValues>(() =>
@@ -151,6 +164,19 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
 
   function handleDownloadSvg() {
     download(svgRef.current, style.name || "qr-code");
+  }
+
+  function handleDelete() {
+    if (!qrCode) return;
+    startDeleting(async () => {
+      try {
+        await deleteQrCode(qrCode.id);
+        toast.success("QR code deleted");
+        router.push("/saved");
+      } catch {
+        toast.error("Could not delete the QR code");
+      }
+    });
   }
 
   function saveQrCode(payload: QrFormValues) {
@@ -225,45 +251,47 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           onSubmit={form.handleSubmit(onSubmit)}
           className="min-w-0 space-y-6"
         >
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="My QR code" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-3">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="My QR code" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex border-b border-border">
-            {(
-              [
-                { id: "content" as Tab, label: "Content", icon: Layers },
-                { id: "style" as Tab, label: "Style", icon: Settings2 },
-              ] as const
-            ).map(({ id, label, icon: Icon }) => {
-              const active = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveTab(id)}
-                  className={
-                    "-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 font-mono text-xs tracking-wide uppercase transition-colors " +
-                    (active
-                      ? "cursor-default border-primary text-primary"
-                      : "cursor-pointer border-transparent text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  <Icon className="size-3.5" />
-                  {label}
-                </button>
-              );
-            })}
+            <div className="flex border-b border-border">
+              {(
+                [
+                  { id: "content" as Tab, label: "Content", icon: Layers },
+                  { id: "style" as Tab, label: "Style", icon: Settings2 },
+                ] as const
+              ).map(({ id, label, icon: Icon }) => {
+                const active = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setActiveTab(id)}
+                    className={
+                      "-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 font-mono text-xs tracking-wide uppercase transition-colors " +
+                      (active
+                        ? "cursor-default border-primary text-primary"
+                        : "cursor-pointer border-transparent text-muted-foreground hover:text-foreground")
+                    }
+                  >
+                    <Icon className="size-3.5" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {activeTab === "content" ? (
@@ -524,7 +552,88 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
 
         {hasContent ? (
           <>
-            <div className="mt-4 grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
+            <div className="mt-4 flex w-full flex-wrap justify-between gap-3">
+              <div className="flex flex-wrap gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="outline" onClick={handleDownloadPng}>
+                      <Download /> PNG
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download PNG</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="outline" onClick={handleDownloadSvg}>
+                      <Download /> SVG
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download SVG</TooltipContent>
+                </Tooltip>
+                {mode === "edit" && qrCode ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label="Share"
+                        asChild
+                      >
+                        <Link href={`/code/${qrCode.id}`}>
+                          <Share2 />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Share</TooltipContent>
+                  </Tooltip>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap gap-1">
+                <Button
+                  type="submit"
+                  form="qr-generator-form"
+                  variant={isSaving ? "outline" : "default"}
+                  disabled={isSaving}
+                >
+                  <Save className="size-4" /> {isSaving ? "Saving…" : "Save"}
+                </Button>
+                {mode === "edit" && qrCode ? (
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            size="icon"
+                            aria-label="Delete"
+                            disabled={isDeleting}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                          >
+                            <Trash2 />
+                          </Button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete</TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this QR code?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
               {[
                 { label: "Type", value: qrTypeLabels[qrType] },
                 { label: "Size", value: `${style.size}px` },
@@ -540,36 +649,6 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                   <span className="font-mono text-sm font-medium text-primary">{value}</span>
                 </div>
               ))}
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button type="button" variant="outline" onClick={handleDownloadPng}>
-                <Download /> PNG
-              </Button>
-              <Button type="button" variant="outline" onClick={handleDownloadSvg}>
-                <Download /> SVG
-              </Button>
-              {mode === "edit" && qrCode ? (
-                <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
-                  <Link href={`/code/${qrCode.id}`}>
-                    <Share2 />
-                  </Link>
-                </Button>
-              ) : null}
-              {mode === "edit" ? (
-                <Button type="button" variant="outline" asChild>
-                  <Link href="/saved">Cancel</Link>
-                </Button>
-              ) : null}
-              <Button
-                type="submit"
-                form="qr-generator-form"
-                variant={isSaving ? "outline" : "default"}
-                disabled={isSaving}
-              >
-                <Save className="size-4" />{" "}
-                {isSaving ? "Saving…" : mode === "edit" ? "Save changes" : "Save"}
-              </Button>
             </div>
           </>
         ) : null}
