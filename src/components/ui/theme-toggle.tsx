@@ -28,11 +28,18 @@ function triggerCenter(el: HTMLElement | null): Point {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
+function supportsViewTransition() {
+  return (
+    "startViewTransition" in document && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const pointerOriginRef = useRef<Point | null>(null);
+  const pendingThemeRef = useRef<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -43,15 +50,7 @@ export function ThemeToggle() {
     ? (THEME_OPTIONS.find((option) => option.value === theme)?.icon ?? Monitor)
     : Monitor;
 
-  function handleThemeChange(value: string) {
-    const origin = pointerOriginRef.current ?? triggerCenter(triggerRef.current);
-    pointerOriginRef.current = null;
-
-    if (!("startViewTransition" in document) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setTheme(value);
-      return;
-    }
-
+  function startThemeTransition(value: string, origin: Point) {
     const root = document.documentElement;
     const radius = Math.hypot(
       Math.max(origin.x, window.innerWidth - origin.x),
@@ -66,6 +65,28 @@ export function ThemeToggle() {
     });
   }
 
+  function handleValueChange(value: string) {
+    // Defer to onCloseAutoFocus so the dropdown's own close animation
+    // finishes before the view transition captures its "after" snapshot —
+    // otherwise the transition briefly shows the menu still open/closing.
+    if (!supportsViewTransition()) {
+      setTheme(value);
+      return;
+    }
+    pendingThemeRef.current = value;
+  }
+
+  function handleCloseAutoFocus() {
+    const value = pendingThemeRef.current;
+    pendingThemeRef.current = null;
+    const origin = pointerOriginRef.current ?? triggerCenter(triggerRef.current);
+    pointerOriginRef.current = null;
+
+    if (value) {
+      startThemeTransition(value, origin);
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -78,8 +99,8 @@ export function ThemeToggle() {
           <TriggerIcon className="size-4" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
+      <DropdownMenuContent align="end" onCloseAutoFocus={handleCloseAutoFocus}>
+        <DropdownMenuRadioGroup value={theme} onValueChange={handleValueChange}>
           {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
             <DropdownMenuRadioItem
               key={value}
