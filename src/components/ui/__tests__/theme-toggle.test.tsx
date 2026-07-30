@@ -8,6 +8,35 @@ vi.mock("next-themes", () => ({
   useTheme: () => useThemeMock(),
 }));
 
+// Hoisted mock utilities for use in individual tests
+const { useEffectStub } = vi.hoisted(() => {
+  let isStubbed = false;
+  return {
+    useEffectStub: {
+      enable: () => {
+        isStubbed = true;
+      },
+      disable: () => {
+        isStubbed = false;
+      },
+      isActive: () => isStubbed,
+    },
+  };
+});
+
+vi.mock("react", async () => {
+  const actual = await vi.importActual<typeof React>("react");
+  return {
+    ...actual,
+    useEffect: ((fn, deps) => {
+      // Only call the effect if not stubbed
+      if (!useEffectStub.isActive()) {
+        return actual.useEffect(fn, deps);
+      }
+    }) as typeof React.useEffect,
+  };
+});
+
 const { ThemeToggle } = await import("@/components/ui/theme-toggle");
 
 describe("ThemeToggle", () => {
@@ -90,29 +119,25 @@ describe("ThemeToggle", () => {
     expect(setThemeMock).toHaveBeenCalledWith("system");
   });
 
-  it("mount guard ensures icon updates correctly after hydration", async () => {
-    // The mount guard (mounted state + useEffect) prevents hydration mismatches
-    // by ensuring the trigger always renders Monitor on the server (mounted=false),
-    // then updates to the actual theme icon after the effect runs (mounted=true).
+  it("keeps the Monitor fallback if the mount effect has not run yet, even when the theme is already resolved", () => {
+    // The mount guard prevents hydration mismatches by rendering Monitor on the server
+    // (mounted=false) even when next-themes has already resolved the theme via localStorage.
+    // This test verifies the pre-mount gate: if the mount effect hasn't fired, the component
+    // must show Monitor regardless of the actual theme value, matching the server render.
     //
-    // This test verifies the component handles the mounted transition correctly:
-    // starting with Monitor fallback and transitioning to the actual theme icon.
+    // Without the mount guard, theme="dark" would render Moon immediately (hydration mismatch).
+    // With the guard, mounted=false forces Monitor until the effect runs (no mismatch).
 
+    useEffectStub.enable();
     useThemeMock.mockReturnValue({ theme: "dark", setTheme: setThemeMock });
 
-    const { container, rerender } = render(<ThemeToggle />);
+    const { container } = render(<ThemeToggle />);
 
-    // After effects have run (synchronously in this test environment),
-    // the component should display the actual theme icon (Moon for dark)
-    expect(container.querySelector(".lucide-moon")).toBeInTheDocument();
+    // Even though the theme is already "dark" (resolved by next-themes during hydration),
+    // the component should still render Monitor because mounted=false (effect never ran)
+    expect(container.querySelector(".lucide-monitor")).toBeInTheDocument();
+    expect(container.querySelector(".lucide-moon")).not.toBeInTheDocument();
 
-    // Verify the component remains stable when re-rendered with same theme
-    rerender(<ThemeToggle />);
-    expect(container.querySelector(".lucide-moon")).toBeInTheDocument();
-
-    // Change theme and verify the icon updates correctly
-    useThemeMock.mockReturnValue({ theme: "light", setTheme: setThemeMock });
-    rerender(<ThemeToggle />);
-    expect(container.querySelector(".lucide-sun")).toBeInTheDocument();
+    useEffectStub.disable();
   });
 });
