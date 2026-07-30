@@ -552,25 +552,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
 
         {hasContent ? (
           <>
-            <div className="mt-4 grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
-              {[
-                { label: "Type", value: qrTypeLabels[qrType] },
-                { label: "Size", value: `${style.size}px` },
-                { label: "Correction", value: style.level },
-              ].map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="flex flex-col items-center gap-0.5 border-r border-border py-1.5 last:border-r-0"
-                >
-                  <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-                    {label}
-                  </span>
-                  <span className="font-mono text-sm font-medium text-primary">{value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex w-full flex-wrap justify-between gap-3">
+            <div className="mt-4 flex w-full flex-wrap justify-between gap-3">
               <div className="flex flex-wrap gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -649,6 +631,24 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                   </AlertDialog>
                 ) : null}
               </div>
+            </div>
+
+            <div className="grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
+              {[
+                { label: "Type", value: qrTypeLabels[qrType] },
+                { label: "Size", value: `${style.size}px` },
+                { label: "Correction", value: style.level },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center gap-0.5 border-r border-border py-1.5 last:border-r-0"
+                >
+                  <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+                    {label}
+                  </span>
+                  <span className="font-mono text-sm font-medium text-primary">{value}</span>
+                </div>
+              ))}
             </div>
           </>
         ) : null}
