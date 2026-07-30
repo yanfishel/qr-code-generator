@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Accordion,
   AccordionContent,
@@ -225,45 +226,47 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           onSubmit={form.handleSubmit(onSubmit)}
           className="min-w-0 space-y-6"
         >
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="My QR code" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-3">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="My QR code" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex border-b border-border">
-            {(
-              [
-                { id: "content" as Tab, label: "Content", icon: Layers },
-                { id: "style" as Tab, label: "Style", icon: Settings2 },
-              ] as const
-            ).map(({ id, label, icon: Icon }) => {
-              const active = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveTab(id)}
-                  className={
-                    "-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 font-mono text-xs tracking-wide uppercase transition-colors " +
-                    (active
-                      ? "cursor-default border-primary text-primary"
-                      : "cursor-pointer border-transparent text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  <Icon className="size-3.5" />
-                  {label}
-                </button>
-              );
-            })}
+            <div className="flex border-b border-border">
+              {(
+                [
+                  { id: "content" as Tab, label: "Content", icon: Layers },
+                  { id: "style" as Tab, label: "Style", icon: Settings2 },
+                ] as const
+              ).map(({ id, label, icon: Icon }) => {
+                const active = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setActiveTab(id)}
+                    className={
+                      "-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 font-mono text-xs tracking-wide uppercase transition-colors " +
+                      (active
+                        ? "cursor-default border-primary text-primary"
+                        : "cursor-pointer border-transparent text-muted-foreground hover:text-foreground")
+                    }
+                  >
+                    <Icon className="size-3.5" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {activeTab === "content" ? (
@@ -542,34 +545,53 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
               ))}
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button type="button" variant="outline" onClick={handleDownloadPng}>
-                <Download /> PNG
-              </Button>
-              <Button type="button" variant="outline" onClick={handleDownloadSvg}>
-                <Download /> SVG
-              </Button>
-              {mode === "edit" && qrCode ? (
-                <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
-                  <Link href={`/code/${qrCode.id}`}>
-                    <Share2 />
-                  </Link>
+            <div className="flex w-full flex-wrap justify-between gap-3">
+              <div className="flex flex-wrap gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="outline" onClick={handleDownloadPng}>
+                      <Download /> PNG
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download PNG</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="outline" onClick={handleDownloadSvg}>
+                      <Download /> SVG
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download SVG</TooltipContent>
+                </Tooltip>
+                {mode === "edit" && qrCode ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label="Share"
+                        asChild
+                      >
+                        <Link href={`/code/${qrCode.id}`}>
+                          <Share2 />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Share</TooltipContent>
+                  </Tooltip>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="submit"
+                  form="qr-generator-form"
+                  variant={isSaving ? "outline" : "default"}
+                  disabled={isSaving}
+                >
+                  <Save className="size-4" /> {isSaving ? "Saving…" : "Save"}
                 </Button>
-              ) : null}
-              {mode === "edit" ? (
-                <Button type="button" variant="outline" asChild>
-                  <Link href="/saved">Cancel</Link>
-                </Button>
-              ) : null}
-              <Button
-                type="submit"
-                form="qr-generator-form"
-                variant={isSaving ? "outline" : "default"}
-                disabled={isSaving}
-              >
-                <Save className="size-4" />{" "}
-                {isSaving ? "Saving…" : mode === "edit" ? "Save changes" : "Save"}
-              </Button>
+              </div>
             </div>
           </>
         ) : null}
