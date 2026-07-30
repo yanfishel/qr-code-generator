@@ -220,7 +220,25 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="min-w-0 space-y-6">
+        <form
+          id="qr-generator-form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="min-w-0 space-y-6"
+        >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="My QR code" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="flex border-b border-border">
             {(
               [
@@ -457,40 +475,6 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
               </AccordionItem>
             </Accordion>
           )}
-
-          <div className="space-y-3 border-t border-primary pt-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={fieldLabelClassName}>Name (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="My QR code" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-center gap-3">
-              {mode === "edit" ? (
-                <Button type="button" variant="outline" size="lg" className="px-8 text-sm" asChild>
-                  <Link href="/saved">Cancel</Link>
-                </Button>
-              ) : null}
-              <Button
-                type="submit"
-                variant={hasContent && !isSaving ? "default" : "outline"}
-                size="lg"
-                className="px-8 text-sm"
-                disabled={!hasContent || isSaving}
-              >
-                <Save className="size-4" />{" "}
-                {isSaving ? "Saving…" : mode === "edit" ? "Save changes" : "Save"}
-              </Button>
-            </div>
-          </div>
         </form>
       </Form>
 
@@ -572,6 +556,20 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                   </Link>
                 </Button>
               ) : null}
+              {mode === "edit" ? (
+                <Button type="button" variant="outline" asChild>
+                  <Link href="/saved">Cancel</Link>
+                </Button>
+              ) : null}
+              <Button
+                type="submit"
+                form="qr-generator-form"
+                variant={isSaving ? "outline" : "default"}
+                disabled={isSaving}
+              >
+                <Save className="size-4" />{" "}
+                {isSaving ? "Saving…" : mode === "edit" ? "Save changes" : "Save"}
+              </Button>
             </div>
           </>
         ) : null}
