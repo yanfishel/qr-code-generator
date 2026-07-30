@@ -538,39 +538,43 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
           </Card>
         </ViewfinderFrame>
 
-        <div className="mt-4 grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
-          {[
-            { label: "Type", value: qrTypeLabels[qrType] },
-            { label: "Size", value: `${style.size}px` },
-            { label: "Correction", value: style.level },
-          ].map(({ label, value }) => (
-            <div
-              key={label}
-              className="flex flex-col items-center gap-0.5 border-r border-border py-1.5 last:border-r-0"
-            >
-              <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
-                {label}
-              </span>
-              <span className="font-mono text-sm font-medium text-primary">{value}</span>
+        {hasContent ? (
+          <>
+            <div className="mt-4 grid w-full grid-cols-3 overflow-hidden rounded-md border border-border">
+              {[
+                { label: "Type", value: qrTypeLabels[qrType] },
+                { label: "Size", value: `${style.size}px` },
+                { label: "Correction", value: style.level },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center gap-0.5 border-r border-border py-1.5 last:border-r-0"
+                >
+                  <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+                    {label}
+                  </span>
+                  <span className="font-mono text-sm font-medium text-primary">{value}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button type="button" variant="outline" onClick={handleDownloadPng} disabled={!hasContent}>
-            <Download /> PNG
-          </Button>
-          <Button type="button" variant="outline" onClick={handleDownloadSvg} disabled={!hasContent}>
-            <Download /> SVG
-          </Button>
-          {mode === "edit" && qrCode ? (
-            <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
-              <Link href={`/code/${qrCode.id}`}>
-                <Share2 />
-              </Link>
-            </Button>
-          ) : null}
-        </div>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button type="button" variant="outline" onClick={handleDownloadPng}>
+                <Download /> PNG
+              </Button>
+              <Button type="button" variant="outline" onClick={handleDownloadSvg}>
+                <Download /> SVG
+              </Button>
+              {mode === "edit" && qrCode ? (
+                <Button type="button" variant="outline" size="icon" aria-label="Share" asChild>
+                  <Link href={`/code/${qrCode.id}`}>
+                    <Share2 />
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );
