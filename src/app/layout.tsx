@@ -87,7 +87,7 @@ export default function RootLayout({
         <ClerkProvider appearance={{ theme: shadcn }}>
           <TooltipProvider>
             <header className="border-b border-border/70 bg-background/80 backdrop-blur-sm">
-              <nav className="mx-auto grid max-w-4xl grid-cols-[1fr_auto_1fr] items-center px-4 py-4">
+              <nav className="mx-auto grid h-[60px] max-w-4xl grid-cols-[1fr_auto_1fr] items-center px-4">
                 <Link href="/" className="flex items-center gap-2.5 justify-self-start">
                   <Logo className="size-6 text-primary" />
                   <span className="hidden font-display text-[1rem] font-semibold tracking-tight sm:inline">QR FRAME</span>
