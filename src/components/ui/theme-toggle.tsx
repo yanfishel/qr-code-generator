@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Monitor, Check, type LucideIcon } from "lucide-react";
 import {
@@ -17,8 +18,16 @@ const THEME_OPTIONS: { value: "light" | "dark" | "system"; label: string; icon: 
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  const TriggerIcon = THEME_OPTIONS.find((option) => option.value === theme)?.icon ?? Monitor;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  const TriggerIcon = mounted
+    ? (THEME_OPTIONS.find((option) => option.value === theme)?.icon ?? Monitor)
+    : Monitor;
 
   return (
     <DropdownMenu>
