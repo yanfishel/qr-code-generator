@@ -184,6 +184,9 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
       try {
         await createQrCode(payload);
         toast.success("QR code saved");
+        setQrType("URL");
+        setFields(defaultQrFieldValues);
+        form.reset(styleDefaultValues);
       } catch (error) {
         if (error instanceof Error && error.message === "Unauthorized") {
           writePendingSave(payload);
