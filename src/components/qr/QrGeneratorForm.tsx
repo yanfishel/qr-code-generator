@@ -9,7 +9,7 @@ import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { QrCode } from "@prisma/client";
-import { Download, Save, Share2, Layers, Settings2 } from "lucide-react";
+import { Download, Save, Share2, Trash2, Layers, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,17 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Accordion,
   AccordionContent,
@@ -41,7 +52,7 @@ import { FinderStyleSelector } from "@/components/qr/FinderStyleSelector";
 import { QrCanvas } from "@/components/qr/QrCanvas";
 import { QrSvg } from "@/components/qr/QrSvg";
 import { useQrDownload } from "@/hooks/use-qr-download";
-import { createQrCode, updateQrCode } from "@/actions/qr-actions";
+import { createQrCode, updateQrCode, deleteQrCode } from "@/actions/qr-actions";
 import {
   buildQrValue,
   defaultQrFieldValues,
@@ -113,6 +124,7 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
   const { isSignedIn } = useAuth();
   const { openSignIn } = useClerk();
   const [isSaving, startSaving] = useTransition();
+  const [isDeleting, startDeleting] = useTransition();
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const [qrType, setQrType] = useState<QrType>(qrCode?.type ?? "URL");
   const [fields, setFields] = useState<QrFieldValues>(() =>
@@ -152,6 +164,19 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
 
   function handleDownloadSvg() {
     download(svgRef.current, style.name || "qr-code");
+  }
+
+  function handleDelete() {
+    if (!qrCode) return;
+    startDeleting(async () => {
+      try {
+        await deleteQrCode(qrCode.id);
+        toast.success("QR code deleted");
+        router.push("/saved");
+      } catch {
+        toast.error("Could not delete the QR code");
+      }
+    });
   }
 
   function saveQrCode(payload: QrFormValues) {
@@ -591,6 +616,38 @@ export function QrGeneratorForm({ mode = "create", qrCode }: QrGeneratorFormProp
                 >
                   <Save className="size-4" /> {isSaving ? "Saving…" : "Save"}
                 </Button>
+                {mode === "edit" && qrCode ? (
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            size="icon"
+                            aria-label="Delete"
+                            disabled={isDeleting}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                          >
+                            <Trash2 />
+                          </Button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete</TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this QR code?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : null}
               </div>
             </div>
           </>
