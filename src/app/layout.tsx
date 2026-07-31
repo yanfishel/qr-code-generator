@@ -1,4 +1,4 @@
-import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { ClerkProvider, Show, SignInButton } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Logo } from "@/components/qr/Logo";
+import { UserMenu } from "@/components/qr/UserMenu";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -121,7 +122,7 @@ export default function RootLayout({
                       </SignInButton>
                     </Show>
                     <Show when="signed-in">
-                      <UserButton />
+                      <UserMenu />
                     </Show>
                     <ThemeToggle />
                   </div>
