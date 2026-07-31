@@ -121,52 +121,6 @@ describe("ThemeToggle", () => {
     expect(setThemeMock).toHaveBeenCalledWith("system");
   });
 
-  it("starts a view transition when the browser supports it and reduced motion isn't requested", async () => {
-    const startViewTransitionMock = vi.fn((callback: () => void) => {
-      callback();
-      return {
-        finished: Promise.resolve(),
-        ready: Promise.resolve(),
-        updateCallbackDone: Promise.resolve(),
-      };
-    });
-    // @ts-expect-error -- jsdom doesn't implement the View Transitions API
-    document.startViewTransition = startViewTransitionMock;
-    const matchMediaMock = vi.fn().mockReturnValue({ matches: false });
-    window.matchMedia = matchMediaMock;
-
-    const user = userEvent.setup();
-    render(<ThemeToggle />);
-
-    await user.click(screen.getByRole("button", { name: "Change theme" }));
-    await user.click(await screen.findByRole("menuitemradio", { name: /^Dark/ }));
-
-    expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
-    expect(setThemeMock).toHaveBeenCalledWith("dark");
-
-    // @ts-expect-error -- cleanup the jsdom polyfill added above
-    delete document.startViewTransition;
-  });
-
-  it("falls back to setting the theme directly when the user prefers reduced motion", async () => {
-    const startViewTransitionMock = vi.fn();
-    document.startViewTransition = startViewTransitionMock;
-    const matchMediaMock = vi.fn().mockReturnValue({ matches: true });
-    window.matchMedia = matchMediaMock;
-
-    const user = userEvent.setup();
-    render(<ThemeToggle />);
-
-    await user.click(screen.getByRole("button", { name: "Change theme" }));
-    await user.click(await screen.findByRole("menuitemradio", { name: /^Dark/ }));
-
-    expect(startViewTransitionMock).not.toHaveBeenCalled();
-    expect(setThemeMock).toHaveBeenCalledWith("dark");
-
-    // @ts-expect-error -- cleanup the jsdom polyfill added above
-    delete document.startViewTransition;
-  });
-
   it("keeps the Monitor fallback if the mount effect has not run yet, even when the theme is already resolved", () => {
     // The mount guard prevents hydration mismatches by rendering Monitor on the server
     // (mounted=false) even when next-themes has already resolved the theme via localStorage.

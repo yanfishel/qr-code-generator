@@ -87,7 +87,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-screen flex-col bg-page-gradient">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ClerkProvider appearance={{ theme: shadcn }}>
             <TooltipProvider>
               <header className="border-b border-border/70 bg-background/80 backdrop-blur-sm">
