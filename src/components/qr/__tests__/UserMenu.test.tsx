@@ -70,6 +70,16 @@ describe("UserMenu", () => {
     expect(signOutMock).toHaveBeenCalledWith({ redirectUrl: "/" });
   });
 
+  it("separates Manage Account and Sign Out with a divider", async () => {
+    const user = userEvent.setup();
+    render(<UserMenu />);
+
+    await user.click(screen.getByRole("button", { name: "Account menu" }));
+    await screen.findByRole("menuitem", { name: /Manage Account/ });
+
+    expect(screen.getAllByRole("separator")).toHaveLength(2);
+  });
+
   it("renders nothing when the user is not loaded", () => {
     useUserMock.mockReturnValue({ user: null });
     const { container } = render(<UserMenu />);

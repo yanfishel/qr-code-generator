@@ -41,11 +41,16 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => openUserProfile()}>
+        <DropdownMenuItem className="cursor-pointer px-2 py-2" onSelect={() => openUserProfile()}>
           <Settings className="size-4" />
           Manage Account
         </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive" onSelect={() => signOut({ redirectUrl: "/" })}>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer px-2 py-2"
+          variant="destructive"
+          onSelect={() => signOut({ redirectUrl: "/" })}
+        >
           <LogOut className="size-4" />
           Sign Out
         </DropdownMenuItem>
